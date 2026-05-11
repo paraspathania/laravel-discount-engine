@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Pipeline;
+use Illuminate\Support\Facades\Cache;
 use App\Pipelines\ValidateCouponPipe;
 use App\Pipelines\ApplyItemDiscountsPipe;
 use App\Pipelines\ApplyOrderDiscountsPipe;
@@ -18,21 +19,31 @@ class CheckoutController extends Controller
 {
     /**
      * Executes the checkout process using the Pipeline pattern.
+     * Incorporates Layer 2: Redis Distributed Locking to prevent double-clicks.
      */
     public function checkout(Request $request)
     {
-        // 1. Build the Cart Payload Object
-        // In a real app, items would be loaded from DB/Session.
-        $cart = new stdClass();
-        $cart->user = $request->user();
-        $cart->couponCode = $request->input('coupon_code');
+        $userId = $request->user()->id;
+
+        // Layer 2 — Redis Distributed Locking
+        // Prevents the same user from initiating checkout concurrently (e.g. double-click)
+        $lock = Cache::lock('checkout_' . $userId, 30);
         
-        // Mocking cart items & subtotal for demonstration
-        $cart->items = []; // Should be populated with actual Product models & prices
-        $cart->subtotal = 0; // Sum of $item->price
-        $cart->baseShippingCost = 1500; // $15.00 shipping
+        if (!$lock->get()) {
+            abort(429, 'Please try again. Your previous checkout request is still processing.');
+        }
 
         try {
+            // 1. Build the Cart Payload Object
+            $cart = new stdClass();
+            $cart->user = $request->user();
+            $cart->couponCode = $request->input('coupon_code');
+            
+            // Mocking cart items & subtotal
+            $cart->items = []; 
+            $cart->subtotal = 0; 
+            $cart->baseShippingCost = 1500; 
+
             // 2. Wire and execute the Pipeline
             $finalCart = Pipeline::send($cart)
                 ->through([
@@ -41,7 +52,7 @@ class CheckoutController extends Controller
                     ApplyOrderDiscountsPipe::class,
                     ApplyShippingDiscountsPipe::class,
                     CalculateTaxesPipe::class,
-                    FinalizeOrderPipe::class,
+                    FinalizeOrderPipe::class, // Contains Layer 1 & 3 concurrency controls
                 ])
                 ->thenReturn();
 
@@ -53,11 +64,13 @@ class CheckoutController extends Controller
             ]);
 
         } catch (Exception $e) {
-            // If any pipe throws an exception, the pipeline aborts cleanly
             return response()->json([
                 'message' => 'Checkout failed.',
                 'error' => $e->getMessage()
             ], 422);
+        } finally {
+            // Guarantee lock is released even if exceptions occur
+            $lock->release();
         }
     }
 }
