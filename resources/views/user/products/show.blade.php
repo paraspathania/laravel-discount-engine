@@ -55,33 +55,7 @@
                                 <span class="text-green-700 font-bold">In Stock ({{ $product->stock }} available)</span>
                             </div>
 
-                            <div x-data="{ 
-                                qty: 1,
-                                adding: false, 
-                                addToCart() {
-                                    this.adding = true;
-                                    fetch('{{ route('user.cart.add') }}', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').content,
-                                            'Accept': 'application/json'
-                                        },
-                                        body: JSON.stringify({ product_id: {{ $product->id }}, qty: this.qty })
-                                    })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        document.querySelectorAll('.cart-count-badge').forEach(el => el.innerText = data.itemCount);
-                                        const container = document.getElementById('toast-container') || document.body;
-                                        const t = document.createElement('div');
-                                        t.className = 'fixed bottom-5 right-5 z-50 bg-green-900 text-white px-6 py-3 rounded-lg shadow-xl font-bold flex items-center transition-all duration-300';
-                                        t.innerHTML = '<svg class=\"w-5 h-5 mr-2 text-green-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"></path></svg> Added ' + this.qty + ' to cart!';
-                                        container.appendChild(t);
-                                        setTimeout(() => t.remove(), 2500);
-                                    })
-                                    .finally(() => { this.adding = false; });
-                                }
-                            }" class="mt-auto border-t border-gray-100 pt-8 flex items-center gap-4">
+                            <div x-data="productDetail({{ $product->id }})" class="mt-auto border-t border-gray-100 pt-8 flex items-center gap-4">
                                 <div class="w-24">
                                     <select x-model="qty" class="block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-xl bg-gray-50">
                                         @for($i = 1; $i <= min(10, $product->stock); $i++)
@@ -128,4 +102,38 @@
 
         </div>
     </div>
+
+    @once
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productDetail', (productId) => ({
+                qty: 1,
+                adding: false, 
+                addToCart() {
+                    this.adding = true;
+                    fetch('{{ route('user.cart.add') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ product_id: productId, qty: this.qty })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll('.cart-count-badge').forEach(el => el.innerText = data.itemCount);
+                        const container = document.getElementById('toast-container') || document.body;
+                        const t = document.createElement('div');
+                        t.className = 'fixed bottom-5 right-5 z-50 bg-green-900 text-white px-6 py-3 rounded-lg shadow-xl font-bold flex items-center transition-all duration-300';
+                        t.innerHTML = '<svg class="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Added ' + this.qty + ' to cart!';
+                        container.appendChild(t);
+                        setTimeout(() => t.remove(), 2500);
+                    })
+                    .finally(() => { this.adding = false; });
+                }
+            }));
+        });
+    </script>
+    @endonce
 @endsection

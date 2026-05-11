@@ -20,6 +20,13 @@ use App\Http\Controllers\User\UserOrderController;
 | Public Storefront Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/dashboard', function () {
+    if (auth()->check() && auth()->user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('user.orders.index');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/offers', [UserOfferController::class, 'index'])->name('user.offers.index');
@@ -50,12 +57,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/remove-coupon', [\App\Http\Controllers\User\CartController::class, 'removeCoupon'])->name('user.cart.coupon.remove');
     
     // Checkout
-    Route::get('/checkout', [UserOrderController::class, 'checkout'])->name('user.checkout.index');
-    Route::post('/checkout', [UserOrderController::class, 'process'])->name('user.checkout.process');
+    Route::get('/checkout', [\App\Http\Controllers\User\CheckoutController::class, 'index'])->name('user.checkout.index');
+    Route::post('/checkout', [\App\Http\Controllers\User\CheckoutController::class, 'process'])->name('user.checkout.process');
     
     // Order History
-    Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders.index');
-    Route::get('/orders/{order}', [UserOrderController::class, 'show'])->name('user.orders.show');
+    Route::get('/orders', [\App\Http\Controllers\User\UserOrderController::class, 'index'])->name('user.orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\User\UserOrderController::class, 'show'])->name('user.orders.show');
+    Route::get('/orders/{order}/confirmation', [\App\Http\Controllers\User\UserOrderController::class, 'confirmation'])->name('user.orders.confirmation');
 
     /*
     |--------------------------------------------------------------------------

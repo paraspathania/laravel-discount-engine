@@ -37,11 +37,11 @@ class Discount extends Model
     // ─── Relationships ────────────────────────────────────────────────────────
 
     /**
-     * The coupon (redemption code) attached to this discount, if any.
+     * The coupons (redemption codes) attached to this discount, if any.
      */
-    public function coupon(): HasOne
+    public function coupons(): HasMany
     {
-        return $this->hasOne(Coupon::class);
+        return $this->hasMany(Coupon::class);
     }
 
     /**
