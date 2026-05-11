@@ -1,69 +1,53 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DiscountController;
+use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Customer\CheckoutController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| Public Auth Routes
 |--------------------------------------------------------------------------
-| Registered with the 'api' middleware group automatically by bootstrap/app.php.
-| All routes here are prefixed with /api and use throttle:api by default.
-|
-| Authentication: Laravel Sanctum (token-based for mobile/SPA clients).
-|   - Issue tokens via POST /api/auth/login
-|   - Revoke via POST /api/auth/logout
-|   - All protected routes require: Authorization: Bearer {token}
 */
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
 
-// ── Auth (Public — no token required) ─────────────────────────────────────────
-
-Route::prefix('auth')->name('api.auth.')->group(function () {
-    Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login'])->name('login');
-    Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register'])->name('register');
-});
-
-// ── Authenticated API Routes (Sanctum token required) ─────────────────────────
-
+/*
+|--------------------------------------------------------------------------
+| Sanctum Protected Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth:sanctum')->group(function () {
+    
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-    // ── Current User ──────────────────────────────────────────────────────────
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    })->name('api.user');
+    // Step 8: Public Offers
+    Route::get('/offers', [DiscountController::class, 'index']);
 
-    Route::post('/auth/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->name('api.auth.logout');
-
-    // ── Discounts (read-only for customers) ────────────────────────────────────
-    Route::prefix('discounts')->name('api.discounts.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\DiscountController::class, 'index'])->name('index');
-        Route::get('/{discount}', [\App\Http\Controllers\Api\DiscountController::class, 'show'])->name('show');
+    // Step 8: Coupon Endpoints (Rate Limited 60 per minute)
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::post('/coupon/validate', [CouponController::class, 'validateCoupon']);
+        Route::post('/coupon/apply', [CouponController::class, 'apply']);
     });
 
-    // ── Coupon Application ────────────────────────────────────────────────────
-    Route::post('/coupons/apply', [\App\Http\Controllers\Api\CouponController::class, 'apply'])->name('api.coupons.apply');
+    // Step 8: Checkout Pipeline
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);
+    
+    // Step 8: Order Summary
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
 
-    // ── Orders ────────────────────────────────────────────────────────────────
-    Route::prefix('orders')->name('api.orders.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\OrderController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\Api\OrderController::class, 'store'])->name('store');
-        Route::get('/{order}', [\App\Http\Controllers\Api\OrderController::class, 'show'])->name('show');
-    });
-
-    // ── Admin API (auth:sanctum + admin role) ─────────────────────────────────
-    // Double-guarded: valid Sanctum token AND role === 'admin'
-    Route::middleware('admin')->prefix('admin')->name('api.admin.')->group(function () {
-
-        // Discounts CRUD
-        Route::apiResource('discounts', \App\Http\Controllers\Api\Admin\DiscountController::class)
-            ->names('api.admin.discounts');
-
-        // Coupons CRUD
-        Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::class)
-            ->names('api.admin.coupons');
-
-        // Usage reports
-        Route::get('/reports/usage', [\App\Http\Controllers\Api\Admin\ReportController::class, 'usage'])
-            ->name('reports.usage');
+    /*
+    |--------------------------------------------------------------------------
+    | Admin API Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        // Double-guarded routes handled by other controllers
+        Route::apiResource('discounts', \App\Http\Controllers\Api\Admin\DiscountController::class);
+        Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::class);
     });
 });
