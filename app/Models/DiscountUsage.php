@@ -14,6 +14,8 @@ class DiscountUsage extends Model
     // Only created_at — no updated_at, this is an immutable audit log
     const UPDATED_AT = null;
 
+    protected $table = 'discount_usage';
+
     protected $fillable = [
         'user_id',
         'order_id',

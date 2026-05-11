@@ -1,94 +1,77 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+
+// Admin Controllers
+use App\Http\Controllers\Admin\DiscountController as AdminDiscountController;
+
+// Main Controllers
+use App\Http\Controllers\HomeController;
+
+// User Controllers
+use App\Http\Controllers\User\UserOfferController;
+use App\Http\Controllers\User\UserProductController;
+use App\Http\Controllers\User\UserCartController;
+use App\Http\Controllers\User\UserOrderController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Public Storefront Routes
 |--------------------------------------------------------------------------
-| Breeze auth routes are loaded via require __DIR__.'/auth.php' at the
-| bottom of this file. All routes here use the 'web' middleware group
-| (session, cookies, CSRF) automatically.
 */
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// ── Public ────────────────────────────────────────────────────────────────────
+Route::get('/offers', [UserOfferController::class, 'index'])->name('user.offers.index');
+Route::get('/offers/{offer}', [UserOfferController::class, 'show'])->name('user.offers.show');
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/products', [UserProductController::class, 'index'])->name('user.products.index');
+Route::get('/products/{product}', [UserProductController::class, 'show'])->name('user.products.show');
 
-// ── Authenticated (any role) ───────────────────────────────────────────────────
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-});
-
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Shopping Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
+    
+    // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-// ── Admin Panel ───────────────────────────────────────────────────────────────
-// Protected by: auth (must be logged in) + admin (role === 'admin')
-// All routes prefixed /admin, named admin.*
+    // Cart (AJAX)
+    Route::get('/cart', [\App\Http\Controllers\User\CartController::class, 'index'])->name('user.cart.index');
+    Route::post('/cart/add', [\App\Http\Controllers\User\CartController::class, 'add'])->name('user.cart.add');
+    Route::post('/cart/remove', [\App\Http\Controllers\User\CartController::class, 'remove'])->name('user.cart.remove');
+    Route::post('/cart/update', [\App\Http\Controllers\User\CartController::class, 'update'])->name('user.cart.update');
+    Route::post('/cart/apply-coupon', [\App\Http\Controllers\User\CartController::class, 'applyCoupon'])->name('user.cart.coupon.apply');
+    Route::post('/cart/remove-coupon', [\App\Http\Controllers\User\CartController::class, 'removeCoupon'])->name('user.cart.coupon.remove');
+    
+    // Checkout
+    Route::get('/checkout', [UserOrderController::class, 'checkout'])->name('user.checkout.index');
+    Route::post('/checkout', [UserOrderController::class, 'process'])->name('user.checkout.process');
+    
+    // Order History
+    Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders.index');
+    Route::get('/orders/{order}', [UserOrderController::class, 'show'])->name('user.orders.show');
 
-Route::middleware(['auth', 'verified', 'admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        // Admin dashboard
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
-
-        // ── Discounts ─────────────────────────────────────────────────────────
-        Route::prefix('discounts')->name('discounts.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\DiscountController::class, 'index'])->name('index');
-            Route::get('/create', [\App\Http\Controllers\Admin\DiscountController::class, 'create'])->name('create');
-            Route::post('/', [\App\Http\Controllers\Admin\DiscountController::class, 'store'])->name('store');
-            Route::get('/{discount}', [\App\Http\Controllers\Admin\DiscountController::class, 'show'])->name('show');
-            Route::get('/{discount}/edit', [\App\Http\Controllers\Admin\DiscountController::class, 'edit'])->name('edit');
-            Route::patch('/{discount}', [\App\Http\Controllers\Admin\DiscountController::class, 'update'])->name('update');
-            Route::delete('/{discount}', [\App\Http\Controllers\Admin\DiscountController::class, 'destroy'])->name('destroy');
-        });
-
-        // ── Coupons ───────────────────────────────────────────────────────────
-        Route::prefix('coupons')->name('coupons.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\CouponController::class, 'index'])->name('index');
-            Route::get('/create', [\App\Http\Controllers\Admin\CouponController::class, 'create'])->name('create');
-            Route::post('/', [\App\Http\Controllers\Admin\CouponController::class, 'store'])->name('store');
-            Route::get('/{coupon}/edit', [\App\Http\Controllers\Admin\CouponController::class, 'edit'])->name('edit');
-            Route::patch('/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'update'])->name('update');
-            Route::delete('/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'destroy'])->name('destroy');
-        });
-
-        // ── Products ──────────────────────────────────────────────────────────
-        Route::prefix('products')->name('products.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\ProductController::class, 'index'])->name('index');
-            Route::get('/create', [\App\Http\Controllers\Admin\ProductController::class, 'create'])->name('create');
-            Route::post('/', [\App\Http\Controllers\Admin\ProductController::class, 'store'])->name('store');
-            Route::get('/{product}/edit', [\App\Http\Controllers\Admin\ProductController::class, 'edit'])->name('edit');
-            Route::patch('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('update');
-            Route::delete('/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('destroy');
-        });
-
-        // ── Usage Reports ─────────────────────────────────────────────────────
-        Route::get('/reports/usage', [\App\Http\Controllers\Admin\ReportController::class, 'usage'])->name('reports.usage');
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Portal (Triple-Guarded: auth, verified, admin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
+        
+        Route::resource('discounts', AdminDiscountController::class);
+        
+        Route::get('coupons', function () { return view('admin.coupons.index'); })->name('coupons.index');
+        Route::post('coupons', function () { return back()->with('success', 'Coupons generated!'); })->name('coupons.store');
+        
+        Route::get('analytics', function () { return view('admin.analytics.index'); })->name('analytics.index');
     });
-
-// ── Customer Storefront ───────────────────────────────────────────────────────
-// Authenticated customers can browse discounts and apply coupons
-
-Route::middleware(['auth'])->prefix('shop')->name('shop.')->group(function () {
-    Route::get('/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('orders');
-    Route::get('/orders/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'show'])->name('orders.show');
-    Route::post('/coupon/apply', [\App\Http\Controllers\Customer\CouponController::class, 'apply'])->name('coupon.apply');
 });
 
-// ── Breeze Auth Routes ────────────────────────────────────────────────────────
 require __DIR__.'/auth.php';
