@@ -1,151 +1,163 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 class="text-4xl font-extrabold text-gray-900">All Products</h1>
-            
-            <!-- Search and Filter Bar -->
-            <div class="mt-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <form action="{{ route('user.products.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-grow">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products..." class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                    </div>
-                    <div class="md:w-64">
-                        <select name="category_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                            <option value="">All Categories</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <button type="submit" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                            Filter
-                        </button>
-                    </div>
-                    @if(request('search') || request('category_id'))
-                        <div>
-                            <a href="{{ route('user.products.index') }}" class="w-full md:w-auto flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">
-                                Clear
-                            </a>
-                        </div>
-                    @endif
-                </form>
+
+{{-- Page Header --}}
+<div class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Shop</h1>
+
+        {{-- Search & Filter --}}
+        <form action="{{ route('user.products.index') }}" method="GET">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search for products…" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                </div>
+                <select name="category_id" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 sm:w-48">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="text-sm font-semibold bg-gray-900 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg transition-colors duration-200">Filter</button>
+                @if(request('search') || request('category_id'))
+                    <a href="{{ route('user.products.index') }}" class="text-sm font-medium text-gray-500 hover:text-gray-800 px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">Clear</a>
+                @endif
             </div>
-        </div>
+        </form>
     </div>
+</div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        @php
-            $discountService = app(\App\Services\DiscountService::class);
-            $activeDiscounts = $discountService->getActiveDiscounts();
-        @endphp
+{{-- Products Grid --}}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    @php
+        $discountService = app(\App\Services\DiscountService::class);
+        $activeDiscounts = $discountService->getActiveDiscounts();
+    @endphp
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            @forelse($products as $product)
-                @php
-                    $bestDiscountedPrice = $product->price;
-                    $bestDiscount = null;
+    @if($products->total() > 0)
+        <p class="text-sm text-gray-400 mb-6">Showing {{ $products->count() }} of {{ $products->total() }} products</p>
+    @endif
 
-                    foreach($activeDiscounts as $discount) {
-                        if ($discount->isSiteWide() || $discount->qualifiableProducts->contains('id', $product->id) || $discount->qualifiableCategories->contains('id', $product->category_id)) {
-                            if(in_array($discount->type, ['percentage', 'fixed_amount'])) {
-                                $strategy = \App\Strategies\DiscountStrategyFactory::make($discount->type);
-                                $newPrice = $strategy->apply($product->price, $discount->value);
-                                if ($newPrice < $bestDiscountedPrice) {
-                                    $bestDiscountedPrice = $newPrice;
-                                    $bestDiscount = $discount;
-                                }
-                            }
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        @forelse($products as $product)
+            @php
+                $bestDiscountedPrice = $product->price;
+                $bestDiscount = null;
+                foreach($activeDiscounts as $discount) {
+                    if ($discount->isSiteWide() || $discount->qualifiableProducts->contains('id', $product->id) || $discount->qualifiableCategories->contains('id', $product->category_id)) {
+                        if(in_array($discount->type, ['percentage', 'fixed_amount'])) {
+                            $strategy = \App\Strategies\DiscountStrategyFactory::make($discount->type);
+                            $newPrice = $strategy->apply($product->price, $discount->value);
+                            if ($newPrice < $bestDiscountedPrice) { $bestDiscountedPrice = $newPrice; $bestDiscount = $discount; }
                         }
                     }
-                @endphp
+                }
+                $imgSrc = asset('images/electronics.png');
+                if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
+            @endphp
 
-                <x-card>
-                    <x-slot name="image">
-                        @php
-                            $imgSrc = asset('images/electronics.png');
-                            if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
-                            elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
-                        @endphp
-                        <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
-                        <div class="absolute top-2 left-2 flex flex-col gap-2">
-                            <x-badge color="gray" text="{{ $product->category->name ?? 'Misc' }}" />
+            <div class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all duration-300 flex flex-col">
+                {{-- Image --}}
+                <div class="relative aspect-square overflow-hidden bg-gray-50">
+                    <a href="{{ route('user.products.show', $product) }}">
+                        <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </a>
+                    {{-- Badges --}}
+                    <div class="absolute top-2.5 left-2.5">
+                        <span class="text-[11px] font-medium bg-white/90 backdrop-blur-sm text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">
+                            {{ $product->category->name ?? 'General' }}
+                        </span>
+                    </div>
+                    @if($bestDiscount)
+                        <div class="absolute top-2.5 right-2.5">
+                            <span class="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                                @if($bestDiscount->type === 'percentage')-{{ $bestDiscount->value / 100 }}%@else Sale @endif
+                            </span>
                         </div>
-                        @if($bestDiscount)
-                            <div class="absolute top-2 right-2">
-                                @if($bestDiscount->type === 'percentage')
-                                    <x-badge color="red" text="Save {{ $bestDiscount->value / 100 }}%" />
-                                @else
-                                    <x-badge color="red" text="Sale Active!" />
-                                @endif
-                            </div>
-                        @endif
-                    </x-slot>
-
-                    <div class="mb-4">
-                        <a href="{{ route('user.products.show', $product) }}" class="hover:text-indigo-600 transition-colors">
-                            <h3 class="text-xl font-bold text-gray-900 leading-tight mb-2">{{ $product->name }}</h3>
-                        </a>
-                        <x-price-display :original-price="$product->price" :discounted-price="$bestDiscountedPrice" />
-                    </div>
-
-                    <!-- Alpine component to handle AJAX add to cart -->
-                    <div x-data="productCard({{ $product->id }})" class="mt-auto">
-                        <button @click="addToCart" :disabled="adding" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center disabled:opacity-75">
-                            <svg x-show="!adding" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <svg x-show="adding" class="w-5 h-5 mr-2 animate-spin" style="display:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span x-text="adding ? 'Adding...' : 'Add to Cart'"></span>
-                        </button>
-                    </div>
-                </x-card>
-            @empty
-                <div class="col-span-full py-20 text-center bg-white rounded-xl border border-gray-200">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h3 class="text-xl font-bold text-gray-900">No products found</h3>
-                    <p class="text-gray-500 mt-2">Try adjusting your search or category filters.</p>
+                    @endif
+                    @if($product->stock <= 0)
+                        <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                            <span class="text-xs font-semibold text-gray-600 bg-white border border-gray-200 px-3 py-1 rounded-full">Out of Stock</span>
+                        </div>
+                    @endif
                 </div>
-            @endforelse
-        </div>
 
-        <div class="mt-12">
-            {{ $products->links() }}
-        </div>
+                {{-- Info --}}
+                <div class="p-4 flex flex-col flex-grow">
+                    <a href="{{ route('user.products.show', $product) }}" class="font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-1 text-sm leading-snug line-clamp-2">
+                        {{ $product->name }}
+                    </a>
+                    <div class="flex items-baseline gap-2 mt-1 mb-4">
+                        @if($bestDiscountedPrice < $product->price)
+                            <span class="text-base font-bold text-gray-900">₹{{ number_format($bestDiscountedPrice / 100, 0) }}</span>
+                            <span class="text-xs text-gray-400 line-through">₹{{ number_format($product->price / 100, 0) }}</span>
+                        @else
+                            <span class="text-base font-bold text-gray-900">₹{{ number_format($product->price / 100, 0) }}</span>
+                        @endif
+                    </div>
+                    <div class="mt-auto" x-data="productCard({{ $product->id }})">
+                        @if($product->stock <= 0)
+                            <button disabled class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+                                Out of Stock
+                            </button>
+                        @else
+                            <button @click="addToCart" :disabled="adding"
+                                class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2.5 rounded-lg transition-colors duration-200 bg-gray-900 hover:bg-indigo-600 text-white disabled:opacity-60">
+                                <svg x-show="!adding" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+                                <svg x-show="adding" class="w-3.5 h-3.5 animate-spin" style="display:none;" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                                <span x-text="adding ? 'Adding…' : 'Add to cart'">Add to cart</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+        @empty
+            <div class="col-span-full py-24 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">No products found</h3>
+                <p class="text-sm text-gray-400">Try a different search term or clear the filters.</p>
+                <a href="{{ route('user.products.index') }}" class="mt-5 inline-block text-sm font-medium text-indigo-600 hover:underline">Clear filters</a>
+            </div>
+        @endforelse
     </div>
 
-    @once
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('productCard', (productId) => ({
-                adding: false, 
-                addToCart() {
-                    this.adding = true;
-                    fetch('{{ route('user.cart.add') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ product_id: productId, qty: 1 })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        document.querySelectorAll('.cart-count-badge').forEach(el => el.innerText = data.itemCount);
-                        const container = document.getElementById('toast-container') || document.body;
-                        const t = document.createElement('div');
-                        t.className = 'fixed bottom-5 right-5 z-50 bg-green-900 text-white px-6 py-3 rounded-lg shadow-xl font-bold flex items-center transition-all duration-300';
-                        t.innerHTML = '<svg class="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Added to cart!';
-                        container.appendChild(t);
-                        setTimeout(() => t.remove(), 2500);
-                    })
-                    .finally(() => { this.adding = false; });
-                }
-            }));
-        });
-    </script>
-    @endonce
+    {{-- Pagination --}}
+    @if($products->hasPages())
+        <div class="mt-10">
+            {{ $products->withQueryString()->links() }}
+        </div>
+    @endif
+</div>
+
+@once
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('productCard', (productId) => ({
+        adding: false,
+        addToCart() {
+            this.adding = true;
+            fetch('{{ route('user.cart.add') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                body: JSON.stringify({ product_id: productId, qty: 1 })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.querySelectorAll('.cart-count-badge').forEach(el => { el.innerText = data.itemCount; el.classList.remove('hidden'); el.classList.add('flex'); });
+                showToast('Added to cart');
+            })
+            .catch(() => showToast('Something went wrong', 'error'))
+            .finally(() => this.adding = false);
+        }
+    }));
+});
+</script>
+@endonce
+
 @endsection

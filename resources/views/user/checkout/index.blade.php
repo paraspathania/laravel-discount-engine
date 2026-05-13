@@ -1,119 +1,108 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="mb-8">
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Secure Checkout</h1>
-            <p class="text-gray-500 mt-2 font-medium">Please review your items and confirm your order.</p>
-        </div>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <div class="flex flex-col lg:flex-row gap-12">
-            <!-- Left: Order Review -->
-            <div class="w-full lg:w-2/3">
-                <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-200">
-                    <div class="px-6 py-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                        <h3 class="text-lg leading-6 font-extrabold text-gray-900">Order Items</h3>
-                        <a href="{{ route('user.cart.index') }}" class="text-sm font-bold text-indigo-600 hover:text-indigo-800">Edit Cart</a>
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Checkout</h1>
+        <p class="text-sm text-gray-400 mt-1">Review your order before placing it.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {{-- Left: Items --}}
+        <div class="lg:col-span-2">
+            <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden mb-4">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <h2 class="font-semibold text-gray-900">Your items</h2>
+                    <a href="{{ route('user.cart.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">Edit cart</a>
+                </div>
+                @foreach($finalCart->items as $item)
+                    @php
+                        $imgSrc = asset('images/electronics.png');
+                        if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                        elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
+                    @endphp
+                    <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-50 last:border-b-0">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                            <img src="{{ $imgSrc }}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-grow">
+                            <p class="font-medium text-gray-900 text-sm">{{ $item->product->name }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Qty: {{ $item->qty }}</p>
+                        </div>
+                        <p class="font-semibold text-gray-900 text-sm">₹{{ number_format($item->price / 100, 0) }}</p>
                     </div>
-                    <ul class="divide-y divide-gray-200">
-                        @foreach($finalCart->items as $item)
-                            <li class="p-6 flex items-center">
-                                @php
-                                    $imgSrc = asset('images/electronics.png');
-                                    if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
-                                    elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
-                                @endphp
-                                <img src="{{ $imgSrc }}" class="h-16 w-16 rounded-lg object-cover mr-6 shadow-sm">
-                                <div class="flex-1">
-                                    <h4 class="text-lg font-bold text-gray-900">{{ $item->product->name }}</h4>
-                                    <p class="text-sm text-gray-500 font-medium">Qty: {{ $item->qty }}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-extrabold text-gray-900">₹{{ number_format($item->price / 100, 2) }}</p>
-                                </div>
+                @endforeach
+            </div>
+
+            {{-- Applied discounts info --}}
+            @if(isset($finalCart->appliedDiscounts) && count($finalCart->appliedDiscounts) > 0)
+                <div class="bg-green-50 border border-green-100 rounded-2xl p-5 mb-4">
+                    <p class="text-xs font-semibold text-green-700 uppercase tracking-wide mb-3">Discounts applied to your order</p>
+                    <ul class="space-y-1.5">
+                        @foreach($finalCart->appliedDiscounts as $applied)
+                            <li class="flex justify-between text-sm">
+                                <span class="text-green-800">{{ $applied['name'] }}</span>
+                                <span class="font-bold text-green-700">−₹{{ number_format($applied['saved_amount'] / 100, 0) }}</span>
                             </li>
                         @endforeach
                     </ul>
                 </div>
-            </div>
+            @endif
+        </div>
 
-            <!-- Right: Payment Summary -->
-            <div class="w-full lg:w-1/3">
-                <div class="bg-white shadow-sm rounded-2xl p-8 border border-gray-200 sticky top-24">
-                    <h2 class="text-xl font-extrabold text-gray-900 mb-6">Payment Summary</h2>
-                    
-                    <dl class="space-y-4 text-sm font-medium text-gray-600 mb-6 border-b border-gray-100 pb-6">
-                        <div class="flex justify-between">
-                            <dt>Subtotal ({{ $finalCart->itemCount }} items)</dt>
-                            <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->subtotal / 100, 2) }}</dd>
-                        </div>
-                        
-                        <!-- Applied Discounts Breakdown -->
-                        @if(isset($finalCart->appliedDiscounts) && count($finalCart->appliedDiscounts) > 0)
-                            <div class="pt-2 pb-2">
-                                <dt class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Discounts Applied:</dt>
-                                @foreach($finalCart->appliedDiscounts as $applied)
-                                    <div class="flex justify-between text-green-600 font-extrabold mb-1">
-                                        <dd class="flex items-center">
-                                            <svg class="w-4 h-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                                            {{ $applied['name'] }}
-                                        </dd>
-                                        <dd>-₹{{ number_format($applied['saved_amount'] / 100, 2) }}</dd>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @elseif($finalCart->itemDiscountsTotal > 0 || $finalCart->orderDiscountsTotal > 0)
-                            <!-- Fallback if appliedDiscounts array isn't populated but savings exist -->
-                            <div class="flex justify-between text-green-600 font-extrabold">
-                                <dt>Discounts Saved</dt>
-                                <dd>-₹{{ number_format(($finalCart->itemDiscountsTotal + $finalCart->orderDiscountsTotal) / 100, 2) }}</dd>
-                            </div>
-                        @endif
-                        
-                        <div class="flex justify-between pt-2">
-                            <dt>Shipping</dt>
-                            @if($finalCart->shippingDiscountTotal > 0)
-                                <dd class="flex items-center">
-                                    <span class="line-through text-gray-400 mr-2">₹{{ number_format($finalCart->baseShippingCost / 100, 2) }}</span>
-                                    <span class="font-black text-green-600 uppercase tracking-wide">Free</span>
-                                </dd>
-                            @else
-                                <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->finalShippingCost / 100, 2) }}</dd>
-                            @endif
-                        </div>
+        {{-- Right: Summary + Place Order --}}
+        <div>
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 sticky top-24">
+                <h2 class="font-semibold text-gray-900 mb-5">Order summary</h2>
 
-                        <div class="flex justify-between pt-2">
-                            <dt>Estimated Tax</dt>
-                            <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->taxTotal / 100, 2) }}</dd>
-                        </div>
-                    </dl>
-
-                    <div class="flex justify-between items-center mb-8">
-                        <h3 class="text-xl font-black text-gray-900">Grand Total</h3>
-                        <span class="text-3xl font-black text-indigo-600">₹{{ number_format($finalCart->grandTotal / 100, 2) }}</span>
+                <div class="space-y-3 text-sm mb-5">
+                    <div class="flex justify-between text-gray-500">
+                        <span>Subtotal ({{ $finalCart->itemCount }} items)</span>
+                        <span class="font-medium text-gray-900">₹{{ number_format($finalCart->subtotal / 100, 0) }}</span>
                     </div>
 
-                    <form action="{{ route('user.checkout.process') }}" method="POST">
-                        @csrf
-                        
-                        <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-start">
-                            <div class="flex items-center h-5">
-                                <input id="terms" name="terms" type="checkbox" required class="focus:ring-indigo-500 h-5 w-5 text-indigo-600 border-gray-300 rounded">
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label for="terms" class="font-bold text-gray-700">I agree to the terms and conditions</label>
-                                <p class="text-gray-500 font-medium mt-1">By placing this order, you agree to our return policy and terms of service.</p>
-                            </div>
+                    @if($finalCart->itemDiscountsTotal > 0 || $finalCart->orderDiscountsTotal > 0)
+                        <div class="flex justify-between text-green-600 font-semibold">
+                            <span>Savings</span>
+                            <span>−₹{{ number_format(($finalCart->itemDiscountsTotal + $finalCart->orderDiscountsTotal) / 100, 0) }}</span>
                         </div>
+                    @endif
 
-                        <button type="submit" class="w-full flex justify-center items-center bg-gray-900 hover:bg-gray-800 text-white text-lg font-black py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-                            Place Order Now
-                            <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        </button>
-                    </form>
+                    <div class="flex justify-between text-gray-500">
+                        <span>Shipping</span>
+                        @if(isset($finalCart->shippingDiscountTotal) && $finalCart->shippingDiscountTotal > 0)
+                            <span class="font-semibold text-green-600">Free</span>
+                        @else
+                            <span class="font-medium text-gray-900">₹{{ number_format($finalCart->finalShippingCost / 100, 0) }}</span>
+                        @endif
+                    </div>
+
+                    <div class="flex justify-between text-gray-500">
+                        <span>Tax (8%)</span>
+                        <span class="font-medium text-gray-900">₹{{ number_format($finalCart->taxTotal / 100, 0) }}</span>
+                    </div>
+
+                    <div class="flex justify-between pt-4 border-t border-gray-100">
+                        <span class="font-bold text-gray-900">Total</span>
+                        <span class="font-bold text-xl text-gray-900">₹{{ number_format($finalCart->grandTotal / 100, 0) }}</span>
+                    </div>
                 </div>
+
+                <form action="{{ route('user.checkout.process') }}" method="POST">
+                    @csrf
+                    <label class="flex items-start gap-3 mb-5 cursor-pointer">
+                        <input type="checkbox" name="terms" required class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-xs text-gray-500 leading-relaxed">I agree to the <a href="#" class="text-indigo-600 hover:underline">terms of service</a> and return policy.</span>
+                    </label>
+
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-indigo-600 text-white font-semibold text-sm py-3.5 rounded-xl transition-colors duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Place Order
+                    </button>
+                    <p class="text-center text-xs text-gray-400 mt-3">Your data is secure & encrypted</p>
+                </form>
             </div>
         </div>
     </div>

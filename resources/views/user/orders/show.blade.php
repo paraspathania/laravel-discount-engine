@@ -1,113 +1,99 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Order #{{ $order->id }}</h1>
-                <p class="text-gray-500 mt-1 font-medium">Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}</p>
-            </div>
-            <a href="{{ route('user.orders.index') }}" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center transition-colors">
-                &larr; Back to Orders
-            </a>
-        </div>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <!-- Status & Identity Card -->
-        <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-200 mb-8 p-6 flex justify-between items-center">
-            <div>
-                <span class="text-sm font-bold text-gray-400 uppercase tracking-wider block mb-1">Current Status</span>
-                @if($order->status === 'completed')
-                    <x-badge color="green" text="Completed" />
-                @elseif($order->status === 'pending')
-                    <x-badge color="yellow" text="Pending Processing" />
-                @else
-                    <x-badge color="gray" text="{{ $order->status }}" />
-                @endif
-            </div>
-            <div class="text-right">
-                <span class="text-sm font-bold text-gray-400 uppercase tracking-wider block mb-1">Customer Account</span>
-                <span class="font-bold text-gray-900">{{ auth()->user()->email }}</span>
-            </div>
-        </div>
+    {{-- Breadcrumb --}}
+    <nav class="flex items-center gap-2 text-sm text-gray-400 mb-8">
+        <a href="{{ route('user.orders.index') }}" class="hover:text-gray-600 transition-colors">My Orders</a>
+        <span>/</span>
+        <span class="text-gray-700 font-medium">Order #{{ $order->id }}</span>
+    </nav>
 
-        <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-200 mb-8">
-            <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
-                <h3 class="text-lg leading-6 font-extrabold text-gray-900">Items Purchased</h3>
-            </div>
-            <ul class="divide-y divide-gray-200">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Order #{{ $order->id }}</h1>
+            <p class="text-sm text-gray-400 mt-1">Placed on {{ $order->created_at->format('M j, Y') }}</p>
+        </div>
+        @if($order->status === 'completed')
+            <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
+        @elseif($order->status === 'pending')
+            <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-50 text-amber-700">Pending</span>
+        @else
+            <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-100 text-gray-600">{{ ucfirst($order->status) }}</span>
+        @endif
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+            <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h2 class="font-semibold text-gray-900">Items ordered</h2>
+                </div>
                 @foreach($order->items as $item)
-                    <li class="p-6 flex items-center">
-                        @php
-                            $imgSrc = asset('images/electronics.png');
-                            if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
-                            elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
-                        @endphp
-                        <img src="{{ $imgSrc }}" class="h-16 w-16 rounded-lg object-cover mr-6 shadow-sm">
-                        <div class="flex-1">
-                            <a href="{{ route('user.products.show', $item->product) }}" class="text-lg font-bold text-indigo-600 hover:text-indigo-800">{{ $item->product->name }}</a>
-                            <p class="text-sm text-gray-500 font-medium">Qty: {{ $item->quantity }} &times; ₹{{ number_format($item->unit_price / 100, 2) }}</p>
+                    @php
+                        $imgSrc = asset('images/electronics.png');
+                        if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                        elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
+                    @endphp
+                    <div class="flex items-center gap-4 p-5 border-b border-gray-50 last:border-b-0">
+                        <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                            <img src="{{ $imgSrc }}" class="w-full h-full object-cover">
                         </div>
-                        <div class="text-right">
-                            <p class="text-lg font-extrabold text-gray-900">₹{{ number_format($item->line_total / 100, 2) }}</p>
+                        <div class="flex-grow">
+                            <p class="font-medium text-gray-900 text-sm">{{ $item->product->name }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Qty {{ $item->quantity }} × ₹{{ number_format($item->unit_price / 100, 0) }}</p>
                         </div>
-                    </li>
+                        <p class="font-semibold text-gray-900 text-sm shrink-0">₹{{ number_format($item->line_total / 100, 0) }}</p>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
+
+            @if($order->discountUsages->count() > 0)
+                <div class="bg-green-50 border border-green-100 rounded-2xl p-5 mt-4">
+                    <p class="text-xs font-semibold text-green-700 uppercase tracking-wide mb-3">Discounts applied</p>
+                    <ul class="space-y-2">
+                        @foreach($order->discountUsages as $usage)
+                            <li class="flex items-center justify-between text-sm">
+                                <span class="text-green-800 font-medium">{{ $usage->discount->name ?? 'Discount' }}</span>
+                                <span class="font-bold text-green-700">−₹{{ number_format($usage->saved_amount / 100, 0) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
 
-        <!-- Receipt Breakdown -->
-        <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-200">
-            <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
-                <h3 class="text-lg leading-6 font-extrabold text-gray-900">Price Breakdown</h3>
-            </div>
-            <div class="p-8">
-                
-                @if($order->discountUsages->count() > 0)
-                    <!-- Discounts Applied Section -->
-                    <div class="mb-8 pb-6 border-b border-gray-200">
-                        <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Discounts Applied to this Order:</h4>
-                        <div class="space-y-3">
-                            @foreach($order->discountUsages as $usage)
-                                <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg border border-green-100">
-                                    <div class="flex items-center">
-                                        <svg class="w-5 h-5 mr-2 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                                        <span class="font-bold text-green-900">{{ $usage->discount->name }}</span>
-                                    </div>
-                                    <span class="font-extrabold text-green-700">Saved ₹{{ number_format($usage->saved_amount / 100, 2) }}</span>
-                                </div>
-                            @endforeach
-                        </div>
+        <div>
+            <div class="bg-white border border-gray-100 rounded-2xl p-6">
+                <h2 class="font-semibold text-gray-900 mb-5">Order summary</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between text-gray-500">
+                        <span>Subtotal</span>
+                        <span class="font-medium text-gray-900">₹{{ number_format($order->subtotal / 100, 0) }}</span>
                     </div>
-                @endif
-
-                <dl class="space-y-4 text-sm font-medium text-gray-600">
-                    <div class="flex justify-between">
-                        <dt>Original Subtotal</dt>
-                        <dd class="font-bold text-gray-900">₹{{ number_format($order->subtotal / 100, 2) }}</dd>
-                    </div>
-                    
                     @if($order->discount_total > 0)
-                        <div class="flex justify-between text-green-600 font-extrabold">
-                            <dt>Total Discounts</dt>
-                            <dd>-₹{{ number_format($order->discount_total / 100, 2) }}</dd>
+                        <div class="flex justify-between text-green-600 font-semibold">
+                            <span>Savings</span>
+                            <span>−₹{{ number_format($order->discount_total / 100, 0) }}</span>
                         </div>
                     @endif
-
-                    <div class="flex justify-between">
-                        <dt>Tax Paid</dt>
-                        <dd class="font-bold text-gray-900">₹{{ number_format($order->tax_total / 100, 2) }}</dd>
+                    <div class="flex justify-between text-gray-500">
+                        <span>Tax</span>
+                        <span class="font-medium text-gray-900">₹{{ number_format($order->tax_total / 100, 0) }}</span>
                     </div>
-
-                    <div class="flex justify-between items-center border-t border-gray-200 pt-6 mt-4">
-                        <dt class="text-xl font-black text-gray-900">Grand Total Paid</dt>
-                        <dd class="text-3xl font-black text-indigo-600">₹{{ number_format($order->grand_total / 100, 2) }}</dd>
+                    <div class="flex justify-between pt-4 border-t border-gray-100">
+                        <span class="font-bold text-gray-900">Grand Total</span>
+                        <span class="font-bold text-xl text-gray-900">₹{{ number_format($order->grand_total / 100, 0) }}</span>
                     </div>
-                </dl>
+                </div>
+                <div class="mt-6">
+                    <a href="{{ route('user.products.index') }}" class="block w-full text-center text-sm font-semibold bg-gray-900 hover:bg-indigo-600 text-white py-3 rounded-lg transition-colors duration-200">
+                        Shop again
+                    </a>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 @endsection
