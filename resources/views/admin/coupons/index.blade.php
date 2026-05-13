@@ -23,7 +23,7 @@
                                 <option value="">Select a discount...</option>
                                 <!-- Map $activeDiscounts here if available -->
                                 <option value="1">Black Friday Sale (20% OFF)</option>
-                                <option value="2">Welcome Bonus ($10 OFF)</option>
+                                <option value="2">Welcome Bonus (₹10 OFF)</option>
                             </select>
                         </div>
                         

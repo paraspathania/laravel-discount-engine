@@ -35,7 +35,7 @@
             </div>
             <div class="relative z-10">
                 <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Savings</p>
-                <h3 class="text-3xl font-black text-gray-900 mt-1">${{ number_format(($stats['total_savings'] ?? 15430) / 100, 2) }}</h3>
+                <h3 class="text-3xl font-black text-gray-900 mt-1">₹{{ number_format(($stats['total_savings'] ?? 15430) / 100, 2) }}</h3>
             </div>
         </div>
 
@@ -78,7 +78,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $redemption->order->user->name ?? 'Guest' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-indigo-600">{{ $redemption->coupon->code ?? 'N/A' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $redemption->discount->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-extrabold text-green-600 text-right">${{ number_format($redemption->saved_amount / 100, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-extrabold text-green-600 text-right">₹{{ number_format($redemption->saved_amount / 100, 2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-right">{{ $redemption->created_at->diffForHumans() }}</td>
                             </tr>
                         @empty
@@ -107,7 +107,7 @@
                         </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="font-medium text-gray-500">{{ ucfirst(str_replace('_', ' ', $discount->type)) }}</span>
-                            <span class="font-black text-green-600">Saved: ${{ number_format($discount->usages_sum_saved_amount / 100, 2) }}</span>
+                            <span class="font-black text-green-600">Saved: ₹{{ number_format($discount->usages_sum_saved_amount / 100, 2) }}</span>
                         </div>
                     </li>
                 @empty

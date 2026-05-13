@@ -66,7 +66,12 @@
 
                 <x-card>
                     <x-slot name="image">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($product->name) }}&background=random&size=400" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                        @php
+                            $imgSrc = asset('images/electronics.png');
+                            if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                            elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
+                        @endphp
+                        <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                         <div class="absolute top-2 left-2 flex flex-col gap-2">
                             <x-badge color="gray" text="{{ $product->category->name ?? 'Misc' }}" />
                         </div>

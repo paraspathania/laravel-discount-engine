@@ -34,7 +34,12 @@
                 <div class="flex flex-col md:flex-row">
                     <!-- Left: Image -->
                     <div class="w-full md:w-1/2 bg-gray-100 p-12 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-200">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($product->name) }}&background=random&size=500" alt="{{ $product->name }}" class="w-full max-w-sm h-auto rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500">
+                        @php
+                            $imgSrc = asset('images/electronics.png');
+                            if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                            elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
+                        @endphp
+                        <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full max-w-sm h-auto rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500">
                     </div>
 
                     <!-- Right: Details -->

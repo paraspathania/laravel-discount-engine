@@ -40,7 +40,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Discount Value</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span class="text-gray-500 font-bold" x-text="type === 'percentage' ? '%' : '$'"></span>
+                            <span class="text-gray-500 font-bold" x-text="type === 'percentage' ? '%' : '₹'"></span>
                         </div>
                         <input type="number" name="value" value="{{ ($discount->value ?? 0) / 100 }}" required min="1" step="0.01" class="w-full pl-10 rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3" :max="type === 'percentage' ? 100 : ''">
                     </div>

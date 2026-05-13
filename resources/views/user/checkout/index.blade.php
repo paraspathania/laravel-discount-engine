@@ -20,13 +20,18 @@
                     <ul class="divide-y divide-gray-200">
                         @foreach($finalCart->items as $item)
                             <li class="p-6 flex items-center">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($item->product->name) }}&background=random" class="h-16 w-16 rounded-lg object-cover mr-6 shadow-sm">
+                                @php
+                                    $imgSrc = asset('images/electronics.png');
+                                    if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
+                                    elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
+                                @endphp
+                                <img src="{{ $imgSrc }}" class="h-16 w-16 rounded-lg object-cover mr-6 shadow-sm">
                                 <div class="flex-1">
                                     <h4 class="text-lg font-bold text-gray-900">{{ $item->product->name }}</h4>
                                     <p class="text-sm text-gray-500 font-medium">Qty: {{ $item->qty }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-lg font-extrabold text-gray-900">${{ number_format($item->price / 100, 2) }}</p>
+                                    <p class="text-lg font-extrabold text-gray-900">₹{{ number_format($item->price / 100, 2) }}</p>
                                 </div>
                             </li>
                         @endforeach
@@ -42,7 +47,7 @@
                     <dl class="space-y-4 text-sm font-medium text-gray-600 mb-6 border-b border-gray-100 pb-6">
                         <div class="flex justify-between">
                             <dt>Subtotal ({{ $finalCart->itemCount }} items)</dt>
-                            <dd class="font-bold text-gray-900">${{ number_format($finalCart->subtotal / 100, 2) }}</dd>
+                            <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->subtotal / 100, 2) }}</dd>
                         </div>
                         
                         <!-- Applied Discounts Breakdown -->
@@ -55,7 +60,7 @@
                                             <svg class="w-4 h-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                             {{ $applied['name'] }}
                                         </dd>
-                                        <dd>-${{ number_format($applied['saved_amount'] / 100, 2) }}</dd>
+                                        <dd>-₹{{ number_format($applied['saved_amount'] / 100, 2) }}</dd>
                                     </div>
                                 @endforeach
                             </div>
@@ -63,7 +68,7 @@
                             <!-- Fallback if appliedDiscounts array isn't populated but savings exist -->
                             <div class="flex justify-between text-green-600 font-extrabold">
                                 <dt>Discounts Saved</dt>
-                                <dd>-${{ number_format(($finalCart->itemDiscountsTotal + $finalCart->orderDiscountsTotal) / 100, 2) }}</dd>
+                                <dd>-₹{{ number_format(($finalCart->itemDiscountsTotal + $finalCart->orderDiscountsTotal) / 100, 2) }}</dd>
                             </div>
                         @endif
                         
@@ -71,23 +76,23 @@
                             <dt>Shipping</dt>
                             @if($finalCart->shippingDiscountTotal > 0)
                                 <dd class="flex items-center">
-                                    <span class="line-through text-gray-400 mr-2">${{ number_format($finalCart->baseShippingCost / 100, 2) }}</span>
+                                    <span class="line-through text-gray-400 mr-2">₹{{ number_format($finalCart->baseShippingCost / 100, 2) }}</span>
                                     <span class="font-black text-green-600 uppercase tracking-wide">Free</span>
                                 </dd>
                             @else
-                                <dd class="font-bold text-gray-900">${{ number_format($finalCart->finalShippingCost / 100, 2) }}</dd>
+                                <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->finalShippingCost / 100, 2) }}</dd>
                             @endif
                         </div>
 
                         <div class="flex justify-between pt-2">
                             <dt>Estimated Tax</dt>
-                            <dd class="font-bold text-gray-900">${{ number_format($finalCart->taxTotal / 100, 2) }}</dd>
+                            <dd class="font-bold text-gray-900">₹{{ number_format($finalCart->taxTotal / 100, 2) }}</dd>
                         </div>
                     </dl>
 
                     <div class="flex justify-between items-center mb-8">
                         <h3 class="text-xl font-black text-gray-900">Grand Total</h3>
-                        <span class="text-3xl font-black text-indigo-600">${{ number_format($finalCart->grandTotal / 100, 2) }}</span>
+                        <span class="text-3xl font-black text-indigo-600">₹{{ number_format($finalCart->grandTotal / 100, 2) }}</span>
                     </div>
 
                     <form action="{{ route('user.checkout.process') }}" method="POST">

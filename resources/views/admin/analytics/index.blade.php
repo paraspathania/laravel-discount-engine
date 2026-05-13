@@ -47,7 +47,7 @@
         <div class="bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
             <svg class="absolute -right-4 -bottom-4 w-32 h-32 opacity-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
             <p class="text-green-100 font-bold uppercase tracking-wider text-sm mb-1">Total Customer Savings Given</p>
-            <h3 class="text-5xl font-black">${{ number_format(($summary['total_saved'] ?? 0) / 100, 2) }}</h3>
+            <h3 class="text-5xl font-black">₹{{ number_format(($summary['total_saved'] ?? 0) / 100, 2) }}</h3>
         </div>
     </div>
 
@@ -70,7 +70,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $usage->order->user->email ?? 'Guest' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600 font-bold">#{{ $usage->order_id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">{{ $usage->discount->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-green-600 text-right">${{ number_format($usage->saved_amount / 100, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-green-600 text-right">₹{{ number_format($usage->saved_amount / 100, 2) }}</td>
                         </tr>
                     @empty
                         <tr>

@@ -29,10 +29,10 @@
                                 <td class="px-6 py-6 whitespace-nowrap text-sm font-black text-gray-900">#{{ $order->id }}</td>
                                 <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium">{{ $order->created_at->format('M j, Y') }}</td>
                                 <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium text-center">{{ $order->items->sum('quantity') }}</td>
-                                <td class="px-6 py-6 whitespace-nowrap text-sm font-black text-gray-900 text-right">${{ number_format($order->grand_total / 100, 2) }}</td>
+                                <td class="px-6 py-6 whitespace-nowrap text-sm font-black text-gray-900 text-right">₹{{ number_format($order->grand_total / 100, 2) }}</td>
                                 <td class="px-6 py-6 whitespace-nowrap text-sm font-extrabold text-green-600 text-right">
                                     @if($order->discount_total > 0)
-                                        -${{ number_format($order->discount_total / 100, 2) }}
+                                        -₹{{ number_format($order->discount_total / 100, 2) }}
                                     @else
                                         -
                                     @endif

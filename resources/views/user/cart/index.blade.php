@@ -32,11 +32,11 @@
                                 <template x-for="item in cart.items" :key="item.product.id">
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="px-6 py-6 flex items-center">
-                                            <img :src="'https://ui-avatars.com/api/?name=' + item.product.name + '&background=random'" class="h-16 w-16 rounded-lg object-cover mr-4 shadow-sm">
+                                            <img :src="item.product.category_id == 2 ? '{{ asset('images/clothing.png') }}' : (item.product.category_id == 3 ? '{{ asset('images/home.png') }}' : '{{ asset('images/electronics.png') }}')" class="h-16 w-16 rounded-lg object-cover mr-4 shadow-sm">
                                             <span class="font-extrabold text-gray-900 text-lg" x-text="item.product.name"></span>
                                         </td>
                                         <td class="px-6 py-6 text-center font-bold text-gray-700">
-                                            $<span x-text="item.unitPriceFormatted"></span>
+                                            ₹<span x-text="item.unitPriceFormatted"></span>
                                         </td>
                                         <td class="px-6 py-6 text-center">
                                             <div class="flex items-center justify-center border border-gray-300 rounded-lg overflow-hidden w-32 mx-auto shadow-sm">
@@ -46,7 +46,7 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-6 text-right font-extrabold text-gray-900 text-lg">
-                                            $<span x-text="item.lineTotalFormatted"></span>
+                                            ₹<span x-text="item.lineTotalFormatted"></span>
                                         </td>
                                         <td class="px-6 py-6 text-right">
                                             <button @click="removeItem(item.product.id)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" :disabled="isLoading">
@@ -102,13 +102,13 @@
                         <dl class="space-y-4 text-sm font-medium text-gray-600">
                             <div class="flex justify-between">
                                 <dt>Subtotal (<span x-text="cart.itemCount"></span> items)</dt>
-                                <dd class="font-bold text-gray-900">$<span x-text="cart.subtotalFormatted"></span></dd>
+                                <dd class="font-bold text-gray-900">₹<span x-text="cart.subtotalFormatted"></span></dd>
                             </div>
                             
                             <template x-if="(cart.itemDiscountsTotal + cart.orderDiscountsTotal) > 0">
                                 <div class="flex justify-between text-green-600 font-extrabold bg-green-50 p-2 rounded-lg -mx-2">
                                     <dt>Discounts Saved</dt>
-                                    <dd>-$<span x-text="cart.discountsFormatted"></span></dd>
+                                    <dd>-₹<span x-text="cart.discountsFormatted"></span></dd>
                                 </div>
                             </template>
                             
@@ -116,23 +116,23 @@
                                 <dt>Shipping</dt>
                                 <template x-if="cart.shippingDiscountTotal > 0">
                                     <dd class="flex items-center">
-                                        <span class="line-through text-gray-400 mr-2">$<span x-text="cart.baseShippingFormatted"></span></span>
+                                        <span class="line-through text-gray-400 mr-2">₹<span x-text="cart.baseShippingFormatted"></span></span>
                                         <span class="font-black text-green-600 uppercase tracking-wide">Free</span>
                                     </dd>
                                 </template>
                                 <template x-if="cart.shippingDiscountTotal == 0">
-                                    <dd class="font-bold text-gray-900">$<span x-text="cart.shippingFormatted"></span></dd>
+                                    <dd class="font-bold text-gray-900">₹<span x-text="cart.shippingFormatted"></span></dd>
                                 </template>
                             </div>
 
                             <div class="flex justify-between border-b border-gray-100 pb-4">
                                 <dt>Estimated Tax (8%)</dt>
-                                <dd class="font-bold text-gray-900">$<span x-text="cart.taxFormatted"></span></dd>
+                                <dd class="font-bold text-gray-900">₹<span x-text="cart.taxFormatted"></span></dd>
                             </div>
 
                             <div class="flex justify-between items-center pt-2">
                                 <dt class="text-xl font-black text-gray-900">Grand Total</dt>
-                                <dd class="text-3xl font-black text-indigo-600">$<span x-text="cart.grandTotalFormatted"></span></dd>
+                                <dd class="text-3xl font-black text-indigo-600">₹<span x-text="cart.grandTotalFormatted"></span></dd>
                             </div>
                         </dl>
 

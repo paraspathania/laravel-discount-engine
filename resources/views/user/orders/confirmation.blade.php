@@ -31,24 +31,24 @@
                         </div>
                         <div class="flex justify-between">
                             <dt>Original Subtotal</dt>
-                            <dd class="font-bold text-gray-900">${{ number_format($order->subtotal / 100, 2) }}</dd>
+                            <dd class="font-bold text-gray-900">₹{{ number_format($order->subtotal / 100, 2) }}</dd>
                         </div>
                         
                         @if($order->discount_total > 0)
                             <div class="flex justify-between text-green-600 font-extrabold bg-green-50 p-2 rounded-lg -mx-2">
                                 <dt>You Saved</dt>
-                                <dd>-${{ number_format($order->discount_total / 100, 2) }}</dd>
+                                <dd>-₹{{ number_format($order->discount_total / 100, 2) }}</dd>
                             </div>
                         @endif
 
                         <div class="flex justify-between">
                             <dt>Tax Paid</dt>
-                            <dd class="font-bold text-gray-900">${{ number_format($order->tax_total / 100, 2) }}</dd>
+                            <dd class="font-bold text-gray-900">₹{{ number_format($order->tax_total / 100, 2) }}</dd>
                         </div>
                         
                         <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-2">
                             <dt class="text-lg font-black text-gray-900">Total Paid</dt>
-                            <dd class="text-2xl font-black text-indigo-600">${{ number_format($order->grand_total / 100, 2) }}</dd>
+                            <dd class="text-2xl font-black text-indigo-600">₹{{ number_format($order->grand_total / 100, 2) }}</dd>
                         </div>
                     </dl>
                 </div>

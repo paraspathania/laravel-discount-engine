@@ -27,7 +27,7 @@
                                 @if($offer->type === 'percentage')
                                     Get a massive {{ $offer->value / 100 }}% discount!
                                 @elseif($offer->type === 'fixed_amount')
-                                    Save exactly ${{ number_format($offer->value / 100, 2) }} on your order!
+                                    Save exactly ₹{{ number_format($offer->value / 100, 2) }} on your order!
                                 @else
                                     Special deal rules apply.
                                 @endif
@@ -69,7 +69,7 @@
                                 <li class="flex items-start">
                                     <svg class="w-6 h-6 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     @if($offer->min_order_value > 0)
-                                        Requires a minimum order value of ${{ number_format($offer->min_order_value / 100, 2) }}.
+                                        Requires a minimum order value of ₹{{ number_format($offer->min_order_value / 100, 2) }}.
                                     @else
                                         No minimum spend required.
                                     @endif

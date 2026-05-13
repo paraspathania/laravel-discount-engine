@@ -35,6 +35,13 @@ Route::get('/offers/{offer}', [UserOfferController::class, 'show'])->name('user.
 Route::get('/products', [UserProductController::class, 'index'])->name('user.products.index');
 Route::get('/products/{product}', [UserProductController::class, 'show'])->name('user.products.show');
 
+// Cart (AJAX) - Guest access allowed
+Route::get('/cart', [\App\Http\Controllers\User\CartController::class, 'index'])->name('user.cart.index');
+Route::post('/cart/add', [\App\Http\Controllers\User\CartController::class, 'add'])->name('user.cart.add');
+Route::post('/cart/remove', [\App\Http\Controllers\User\CartController::class, 'remove'])->name('user.cart.remove');
+Route::post('/cart/update', [\App\Http\Controllers\User\CartController::class, 'update'])->name('user.cart.update');
+Route::post('/cart/apply-coupon', [\App\Http\Controllers\User\CartController::class, 'applyCoupon'])->name('user.cart.coupon.apply');
+Route::post('/cart/remove-coupon', [\App\Http\Controllers\User\CartController::class, 'removeCoupon'])->name('user.cart.coupon.remove');
 
 /*
 |--------------------------------------------------------------------------
@@ -48,13 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Cart (AJAX)
-    Route::get('/cart', [\App\Http\Controllers\User\CartController::class, 'index'])->name('user.cart.index');
-    Route::post('/cart/add', [\App\Http\Controllers\User\CartController::class, 'add'])->name('user.cart.add');
-    Route::post('/cart/remove', [\App\Http\Controllers\User\CartController::class, 'remove'])->name('user.cart.remove');
-    Route::post('/cart/update', [\App\Http\Controllers\User\CartController::class, 'update'])->name('user.cart.update');
-    Route::post('/cart/apply-coupon', [\App\Http\Controllers\User\CartController::class, 'applyCoupon'])->name('user.cart.coupon.apply');
-    Route::post('/cart/remove-coupon', [\App\Http\Controllers\User\CartController::class, 'removeCoupon'])->name('user.cart.coupon.remove');
+    // Cart (AJAX) - Moved outside auth middleware for guest access
     
     // Checkout
     Route::get('/checkout', [\App\Http\Controllers\User\CheckoutController::class, 'index'])->name('user.checkout.index');

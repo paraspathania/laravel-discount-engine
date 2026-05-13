@@ -50,7 +50,7 @@
                                     @if($discount->type === 'percentage')
                                         {{ $discount->value / 100 }}% OFF
                                     @elseif($discount->type === 'fixed_amount')
-                                        ${{ number_format($discount->value / 100, 2) }}
+                                        ₹{{ number_format($discount->value / 100, 2) }}
                                     @else
                                         -
                                     @endif
