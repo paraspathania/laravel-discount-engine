@@ -21,9 +21,9 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">Target Discount Rule</label>
                             <select name="discount_id" required class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm py-3">
                                 <option value="">Select a discount...</option>
-                                <!-- Map $activeDiscounts here if available -->
-                                <option value="1">Black Friday Sale (20% OFF)</option>
-                                <option value="2">Welcome Bonus (₹10 OFF)</option>
+                                @foreach($activeDiscounts as $discount)
+                                    <option value="{{ $discount->id }}">{{ $discount->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         
@@ -77,10 +77,10 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-mono font-black text-indigo-700">{{ $coupon->code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{{ $coupon->discount->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-500">
-                                        {{ $coupon->usage_count }} / {{ $coupon->max_uses ?: '&infin;' }}
+                                        {{ $coupon->usage_count }} / {!! $coupon->max_uses_per_user ?: '&infin;' !!}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($coupon->max_uses && $coupon->usage_count >= $coupon->max_uses)
+                                        @if($coupon->max_uses_per_user && $coupon->usage_count >= $coupon->max_uses_per_user)
                                             <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold uppercase">Exhausted</span>
                                         @else
                                             <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold uppercase">Active</span>

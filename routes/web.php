@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
     if (auth()->check() && auth()->user()->role === 'admin') {
         return redirect()->route('admin.dashboard');
     }
-    return redirect()->route('user.orders.index');
+    return app(\App\Http\Controllers\User\UserDashboardController::class)->index();
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -76,8 +76,8 @@ Route::middleware('auth')->group(function () {
         
         Route::resource('discounts', AdminDiscountController::class);
         
-        Route::get('coupons', function () { return view('admin.coupons.index'); })->name('coupons.index');
-        Route::post('coupons', function () { return back()->with('success', 'Coupons generated!'); })->name('coupons.store');
+        Route::get('coupons', [\App\Http\Controllers\Admin\AdminCouponController::class, 'index'])->name('coupons.index');
+        Route::post('coupons', [\App\Http\Controllers\Admin\AdminCouponController::class, 'store'])->name('coupons.store');
         
         Route::get('analytics', function () { return view('admin.analytics.index'); })->name('analytics.index');
     });

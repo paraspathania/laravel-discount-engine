@@ -46,6 +46,14 @@ class Order extends Model
         return $this->hasMany(DiscountUsage::class);
     }
 
+    /**
+     * Items in this order.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     // ─── Status Helpers ───────────────────────────────────────────────────────
 
     public function isPending(): bool    { return $this->status === 'pending'; }

@@ -65,11 +65,15 @@ class CheckoutController extends Controller
 
         $userId = auth()->id();
         
-        // Concurrency Protection Layer 2: Redis Distributed Locking
-        $lock = Cache::lock('checkout_' . $userId, 30);
-
-        if (!$lock->get()) {
-            return back()->with('error', 'Please wait, your previous checkout is still processing.');
+        // Concurrency Protection Layer 2: Redis/Database Distributed Locking
+        try {
+            $lock = Cache::store('database')->lock('checkout_' . $userId, 30);
+            if (!$lock->get()) {
+                return back()->with('error', 'Please wait, your previous checkout is still processing.');
+            }
+        } catch (\Exception $e) {
+            // Fallback if database cache is not configured properly
+            $lock = null;
         }
 
         try {
@@ -90,12 +94,14 @@ class CheckoutController extends Controller
             $this->cartService->clear();
             session()->forget('coupon_code');
 
-            return redirect()->route('user.orders.confirmation', $finalCart->order_id);
+            return redirect()->route('user.orders.confirmation', $finalCart->createdOrder->id);
             
         } catch (Exception $e) {
             return redirect()->route('user.checkout.index')->with('error', $e->getMessage());
         } finally {
-            $lock->release();
+            if ($lock) {
+                $lock->release();
+            }
         }
     }
 

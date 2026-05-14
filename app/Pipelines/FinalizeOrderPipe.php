@@ -34,6 +34,16 @@ class FinalizeOrderPipe
                 'status' => 'confirmed',
             ]);
 
+            // Save order items
+            foreach ($cart->items as $item) {
+                $order->items()->create([
+                    'product_id' => $item->product->id,
+                    'quantity'   => $item->qty,
+                    'unit_price' => $item->product->price,
+                    'line_total' => $item->price,
+                ]);
+            }
+
             $cart->createdOrder = $order;
 
             // 2. Write to discount_usage and atomically increment limits

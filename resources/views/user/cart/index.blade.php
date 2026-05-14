@@ -173,7 +173,13 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify(data)
                 });
                 const result = await res.json();
-                if (result.cart) { this.cart = result.cart; this.updateBadge(); }
+                if (result.cart) { 
+                    this.cart = result.cart; 
+                    this.updateBadge(); 
+                } else if (result.items) {
+                    this.cart = result;
+                    this.updateBadge();
+                }
                 if (result.success === false && result.message) { this.couponError = result.message; }
                 if (result.success === true) { this.couponInput = ''; showToast('Coupon applied!'); }
             } catch { showToast('Something went wrong', 'error'); }
