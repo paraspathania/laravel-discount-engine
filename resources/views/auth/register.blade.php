@@ -18,9 +18,37 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" 
-                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 focus:bg-white transition-all text-sm">
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 focus:bg-white transition-all text-sm"
+                oninput="checkEmail(this.value)">
+
+            {{-- Server-side error (e.g. already taken, invalid format) --}}
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
+
+            {{-- Live client-side hints (hidden until user starts typing) --}}
+            <div id="email-hints" class="mt-2 space-y-1 hidden">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Email requirements</p>
+                <div class="flex items-center gap-2 text-xs" id="hint-has-at">
+                    <span id="icon-has-at" class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 font-bold text-[10px] shrink-0">✕</span>
+                    <span class="text-gray-500">Contains @ symbol</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs" id="hint-has-domain">
+                    <span id="icon-has-domain" class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 font-bold text-[10px] shrink-0">✕</span>
+                    <span class="text-gray-500">Valid domain (e.g. gmail.com)</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs" id="hint-no-spaces">
+                    <span id="icon-no-spaces" class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 font-bold text-[10px] shrink-0">✕</span>
+                    <span class="text-gray-500">No spaces allowed</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs" id="hint-local-part">
+                    <span id="icon-local-part" class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 font-bold text-[10px] shrink-0">✕</span>
+                    <span class="text-gray-500">Valid local part (before @)</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs" id="hint-tld">
+                    <span id="icon-tld" class="w-4 h-4 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 font-bold text-[10px] shrink-0">✕</span>
+                    <span class="text-gray-500">Has a valid extension (.com, .in, etc.)</span>
+                </div>
+            </div>
         </div>
 
         <!-- Password -->
@@ -50,4 +78,42 @@
             </a>
         </div>
     </form>
+
+    <script>
+        function checkEmail(value) {
+            const hintsBox = document.getElementById('email-hints');
+
+            if (value.length === 0) {
+                hintsBox.classList.add('hidden');
+                return;
+            }
+            hintsBox.classList.remove('hidden');
+
+            const checks = {
+                'has-at':     value.includes('@'),
+                'no-spaces':  !/\s/.test(value),
+                'has-domain': /^[^@]+@[^@]+\.[^@]+$/.test(value),
+                'local-part': /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@/.test(value),
+                'tld':        /\.[a-zA-Z]{2,}$/.test(value),
+            };
+
+            Object.entries(checks).forEach(([key, passed]) => {
+                const icon = document.getElementById('icon-' + key);
+                if (!icon) return;
+                if (passed) {
+                    icon.textContent = '✓';
+                    icon.className = 'w-4 h-4 flex items-center justify-center rounded-full bg-green-100 text-green-600 font-bold text-[10px] shrink-0';
+                } else {
+                    icon.textContent = '✕';
+                    icon.className = 'w-4 h-4 flex items-center justify-center rounded-full bg-red-100 text-red-500 font-bold text-[10px] shrink-0';
+                }
+            });
+        }
+
+        // Run on load if old() value is pre-filled after a validation error
+        const emailInput = document.getElementById('email');
+        if (emailInput && emailInput.value) {
+            checkEmail(emailInput.value);
+        }
+    </script>
 </x-guest-layout>

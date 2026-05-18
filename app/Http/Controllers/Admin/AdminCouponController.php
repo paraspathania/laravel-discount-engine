@@ -12,7 +12,7 @@ class AdminCouponController extends Controller
 {
     public function index()
     {
-        $activeDiscounts = Discount::where('is_active', true)->orderBy('name')->get();
+        $activeDiscounts = Discount::active()->orderBy('name')->get();
         $coupons = Coupon::with('discount')->latest()->paginate(50);
         
         return view('admin.coupons.index', compact('activeDiscounts', 'coupons'));

@@ -5,6 +5,11 @@ use App\Http\Controllers\ProfileController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\DiscountController as AdminDiscountController;
+use App\Http\Controllers\Admin\AdminCouponController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 
 // Main Controllers
 use App\Http\Controllers\HomeController;
@@ -55,8 +60,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Cart (AJAX) - Moved outside auth middleware for guest access
-    
     // Checkout
     Route::get('/checkout', [\App\Http\Controllers\User\CheckoutController::class, 'index'])->name('user.checkout.index');
     Route::post('/checkout', [\App\Http\Controllers\User\CheckoutController::class, 'process'])->name('user.checkout.process');
@@ -72,14 +75,28 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
-        
+
+        // Dashboard (real data via controller)
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Discount Management (full resource)
         Route::resource('discounts', AdminDiscountController::class);
-        
-        Route::get('coupons', [\App\Http\Controllers\Admin\AdminCouponController::class, 'index'])->name('coupons.index');
-        Route::post('coupons', [\App\Http\Controllers\Admin\AdminCouponController::class, 'store'])->name('coupons.store');
-        
-        Route::get('analytics', function () { return view('admin.analytics.index'); })->name('analytics.index');
+
+        // Coupon Management
+        Route::get('coupons', [AdminCouponController::class, 'index'])->name('coupons.index');
+        Route::post('coupons', [AdminCouponController::class, 'store'])->name('coupons.store');
+
+        // Product Management (full resource)
+        Route::resource('products', AdminProductController::class);
+
+        // Order Management
+        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+        // Analytics
+        Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('analytics/export', [AdminAnalyticsController::class, 'export'])->name('analytics.export');
     });
 });
 

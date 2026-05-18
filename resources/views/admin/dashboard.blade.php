@@ -66,7 +66,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Coupon Code</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Order</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Discount</th>
                             <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saved Amount</th>
                             <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
@@ -76,8 +76,8 @@
                         @forelse($recentRedemptions ?? [] as $redemption)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $redemption->order->user->name ?? 'Guest' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-indigo-600">{{ $redemption->coupon->code ?? 'N/A' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $redemption->discount->name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-indigo-600">#{{ $redemption->order_id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $redemption->discount->name ?? 'N/A' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-extrabold text-green-600 text-right">₹{{ number_format($redemption->saved_amount / 100, 2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-right">{{ $redemption->created_at->diffForHumans() }}</td>
                             </tr>
