@@ -36,8 +36,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
 
         {{-- Left: Image --}}
-        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden aspect-square flex items-center justify-center p-8">
-            <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full max-w-sm h-auto object-contain hover:scale-105 transition-transform duration-500">
+        <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden aspect-square flex items-center justify-center p-8">
+            <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full max-w-sm h-auto object-contain group-hover:scale-105 transition-transform duration-500">
         </div>
 
         {{-- Right: Details --}}
@@ -56,7 +56,7 @@
                     <div class="flex items-baseline gap-3">
                         <span class="text-3xl font-bold text-gray-900">₹{{ number_format($bestDiscountedPrice / 100, 0) }}</span>
                         <span class="text-lg text-gray-400 line-through">₹{{ number_format($product->price / 100, 0) }}</span>
-                        <span class="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                        <span class="text-sm font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded">
                             Save ₹{{ number_format(($product->price - $bestDiscountedPrice) / 100, 0) }}
                         </span>
                     </div>
@@ -67,13 +67,13 @@
 
             {{-- Stock & Add to Cart --}}
             @if($product->stock > 0)
-                <div class="mb-6 flex items-center gap-2">
+                <div class="mb-5 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     <span class="text-sm font-medium text-green-700">In stock — {{ $product->stock }} left</span>
                 </div>
 
                 <div x-data="productDetail({{ $product->id }})" class="flex items-center gap-3 mb-6">
-                    <select x-model="qty" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 w-20">
+                    <select x-model="qty" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white w-20">
                         @for($i = 1; $i <= min(10, $product->stock); $i++)
                             <option value="{{ $i }}">{{ $i }}</option>
                         @endfor
@@ -85,7 +85,7 @@
                     </button>
                 </div>
             @else
-                <div class="mb-6 flex items-center gap-2">
+                <div class="mb-5 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-red-400"></span>
                     <span class="text-sm font-medium text-red-600">Out of stock</span>
                 </div>

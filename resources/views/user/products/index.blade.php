@@ -5,24 +5,29 @@
 {{-- Page Header --}}
 <div class="bg-white border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Shop</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-1">Shop</h1>
+        @if($products->total() > 0)
+            <p class="text-sm text-gray-400 mb-6">{{ $products->total() }} products available</p>
+        @else
+            <p class="text-sm text-gray-400 mb-6">Browse our catalogue</p>
+        @endif
 
         {{-- Search & Filter --}}
         <form action="{{ route('user.products.index') }}" method="GET">
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-grow">
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search for products…" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products…" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white">
                 </div>
-                <select name="category_id" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 sm:w-48">
-                    <option value="">All Categories</option>
+                <select name="category_id" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white sm:w-48">
+                    <option value="">All categories</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                     @endforeach
                 </select>
                 <button type="submit" class="text-sm font-semibold bg-gray-900 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg transition-colors duration-200">Filter</button>
                 @if(request('search') || request('category_id'))
-                    <a href="{{ route('user.products.index') }}" class="text-sm font-medium text-gray-500 hover:text-gray-800 px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">Clear</a>
+                    <a href="{{ route('user.products.index') }}" class="text-sm font-medium text-gray-500 hover:text-gray-800 px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-center">Clear</a>
                 @endif
             </div>
         </form>
@@ -35,10 +40,6 @@
         $discountService = app(\App\Services\DiscountService::class);
         $activeDiscounts = $discountService->getActiveDiscounts();
     @endphp
-
-    @if($products->total() > 0)
-        <p class="text-sm text-gray-400 mb-6">Showing {{ $products->count() }} of {{ $products->total() }} products</p>
-    @endif
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         @forelse($products as $product)
@@ -59,28 +60,30 @@
                 elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
             @endphp
 
-            <div class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all duration-300 flex flex-col">
+            <div class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col">
                 {{-- Image --}}
                 <div class="relative aspect-square overflow-hidden bg-gray-50">
                     <a href="{{ route('user.products.show', $product) }}">
                         <img src="{{ $imgSrc }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     </a>
-                    {{-- Badges --}}
+                    {{-- Category Badge --}}
                     <div class="absolute top-2.5 left-2.5">
-                        <span class="text-[11px] font-medium bg-white/90 backdrop-blur-sm text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">
+                        <span class="text-[11px] font-medium bg-white text-gray-600 px-2 py-0.5 rounded border border-gray-200 shadow-sm">
                             {{ $product->category->name ?? 'General' }}
                         </span>
                     </div>
+                    {{-- Discount Badge --}}
                     @if($bestDiscount)
                         <div class="absolute top-2.5 right-2.5">
-                            <span class="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                            <span class="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded">
                                 @if($bestDiscount->type === 'percentage')-{{ $bestDiscount->value / 100 }}%@else Sale @endif
                             </span>
                         </div>
                     @endif
+                    {{-- Out of Stock Overlay --}}
                     @if($product->stock <= 0)
-                        <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                            <span class="text-xs font-semibold text-gray-600 bg-white border border-gray-200 px-3 py-1 rounded-full">Out of Stock</span>
+                        <div class="absolute inset-0 bg-white/70 flex items-center justify-center">
+                            <span class="text-xs font-semibold text-gray-500 bg-white border border-gray-200 px-3 py-1 rounded">Out of stock</span>
                         </div>
                     @endif
                 </div>
@@ -100,8 +103,8 @@
                     </div>
                     <div class="mt-auto" x-data="productCard({{ $product->id }})">
                         @if($product->stock <= 0)
-                            <button disabled class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
-                                Out of Stock
+                            <button disabled class="w-full flex items-center justify-center text-xs font-semibold py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+                                Out of stock
                             </button>
                         @else
                             <button @click="addToCart" :disabled="adding"
@@ -117,12 +120,12 @@
 
         @empty
             <div class="col-span-full py-24 text-center">
-                <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-1">No products found</h3>
-                <p class="text-sm text-gray-400">Try a different search term or clear the filters.</p>
-                <a href="{{ route('user.products.index') }}" class="mt-5 inline-block text-sm font-medium text-indigo-600 hover:underline">Clear filters</a>
+                <h3 class="text-base font-semibold text-gray-900 mb-1">No products found</h3>
+                <p class="text-sm text-gray-400 mb-5">Try a different search term or clear the filters.</p>
+                <a href="{{ route('user.products.index') }}" class="text-sm font-medium text-indigo-600 hover:underline">Clear filters</a>
             </div>
         @endforelse
     </div>

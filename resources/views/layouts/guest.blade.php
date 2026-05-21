@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Bazaar') }}</title>
+    <title>{{ config('app.name', 'SavvyCart') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
                         </div>
-                        <span class="text-2xl font-bold text-gray-900 tracking-tight">Bazaar</span>
+                        <span class="text-2xl font-bold text-gray-900 tracking-tight">{{ config('app.name', 'SavvyCart') }}</span>
                     </a>
                 </div>
 
@@ -47,7 +47,7 @@
             
             <div class="relative z-10 p-12 max-w-lg text-center">
                 <h2 class="font-serif text-4xl text-gray-900 leading-tight mb-4">Never overpay again.</h2>
-                <p class="text-lg text-gray-600">Join thousands of smart shoppers using Bazaar to unlock exclusive deals and automatic coupon stacking.</p>
+                <p class="text-lg text-gray-600">Join thousands of smart shoppers using {{ config('app.name', 'SavvyCart') }} to unlock exclusive deals and automatic coupon stacking.</p>
                 <div class="mt-8 flex justify-center">
                     <!-- Stylized mockup graphic -->
                     <div class="w-64 bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 flex flex-col p-6 items-start gap-4 transform rotate-[-2deg]">

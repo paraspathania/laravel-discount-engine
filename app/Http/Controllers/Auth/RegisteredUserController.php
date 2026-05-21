@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
                 'string',
                 'lowercase',
                 'max:255',
-                Rules\Email::default()->rfcCompliant()->preventSpoofing(),
+                Rules\Email::default()->rfcCompliant(),
                 'unique:' . User::class,
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
