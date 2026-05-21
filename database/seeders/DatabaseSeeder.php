@@ -46,7 +46,8 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            Product::firstOrCreate(['sku' => $p['sku']], $p);
+            $p['price'] = $p['price'] * 100;
+            Product::updateOrCreate(['sku' => $p['sku']], $p);
         }
 
         // 4. Create an Active Sitewide Offer

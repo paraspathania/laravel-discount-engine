@@ -103,9 +103,7 @@
                     </div>
                     @foreach($finalCart->items as $item)
                         @php
-                            $imgSrc = asset('images/electronics.png');
-                            if ($item->product->category_id == 2) $imgSrc = asset('images/clothing.png');
-                            elseif ($item->product->category_id == 3) $imgSrc = asset('images/home.png');
+                            $imgSrc = $item->product->image_url;
                         @endphp
                         <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-50 last:border-b-0">
                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0">

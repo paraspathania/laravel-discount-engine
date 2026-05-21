@@ -55,9 +55,7 @@
                         }
                     }
                 }
-                $imgSrc = asset('images/electronics.png');
-                if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
-                elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
+                $imgSrc = $product->image_url;
             @endphp
 
             <div class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col">

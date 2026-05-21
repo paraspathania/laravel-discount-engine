@@ -26,7 +26,7 @@
 
                             {{-- Image --}}
                             <div class="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                                <img :src="item.product.category_id == 2 ? '{{ asset('images/clothing.png') }}' : (item.product.category_id == 3 ? '{{ asset('images/home.png') }}' : '{{ asset('images/electronics.png') }}')"
+                                <img :src="item.product.image_url"
                                      class="w-full h-full object-cover">
                             </div>
 

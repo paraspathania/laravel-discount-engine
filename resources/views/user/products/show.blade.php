@@ -17,9 +17,7 @@
             }
         }
     }
-    $imgSrc = asset('images/electronics.png');
-    if ($product->category_id == 2) $imgSrc = asset('images/clothing.png');
-    elseif ($product->category_id == 3) $imgSrc = asset('images/home.png');
+    $imgSrc = $product->image_url;
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

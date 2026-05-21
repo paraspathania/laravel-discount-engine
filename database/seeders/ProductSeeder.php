@@ -105,7 +105,8 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $product) {
-            Product::firstOrCreate(
+            $product['price'] = $product['price'] * 100;
+            Product::updateOrCreate(
                 ['sku' => $product['sku']],
                 $product
             );
