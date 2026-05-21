@@ -11,7 +11,10 @@ uses(RefreshDatabase::class);
 it('handles 2 simultaneous requests on a discount with 1 use left; 1 succeeds and 1 fails gracefully', function () {
     // 1. Setup actual database record
     $user = User::factory()->create();
-    $discount = Discount::factory()->create([
+    $discount = Discount::create([
+        'name' => 'Concurrent Test Discount',
+        'type' => 'fixed_amount',
+        'value' => 100,
         'usage_limit' => 1,
         'usage_count' => 0
     ]);
@@ -19,6 +22,7 @@ it('handles 2 simultaneous requests on a discount with 1 use left; 1 succeeds an
     // 2. Setup Cart 1
     $cart1 = new stdClass();
     $cart1->user = $user;
+    $cart1->items = [];
     $cart1->subtotal = 1000;
     $cart1->itemDiscountsTotal = 0;
     $cart1->orderDiscountsTotal = 0;

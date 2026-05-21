@@ -19,6 +19,7 @@ class Discount extends Model
         'usage_limit',
         'usage_count',
         'is_stackable',
+        'minimum_order_value',
     ];
 
     /**
@@ -32,6 +33,7 @@ class Discount extends Model
         'is_stackable' => 'boolean',
         'starts_at'    => 'datetime',
         'ends_at'      => 'datetime',
+        'minimum_order_value' => 'integer',
     ];
 
     // ─── Relationships ────────────────────────────────────────────────────────

@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
         // Coupon Management
         Route::get('coupons', [AdminCouponController::class, 'index'])->name('coupons.index');
         Route::post('coupons', [AdminCouponController::class, 'store'])->name('coupons.store');
+        Route::delete('coupons/{coupon}', [AdminCouponController::class, 'destroy'])->name('coupons.destroy');
 
         // Product Management (full resource)
         Route::resource('products', AdminProductController::class);

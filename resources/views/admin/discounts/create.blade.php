@@ -3,107 +3,183 @@
 @section('header', 'Create New Discount')
 
 @section('content')
-    <form action="{{ route('admin.discounts.store') }}" method="POST" x-data="{ type: 'percentage' }" class="max-w-4xl">
-        @csrf
-        
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div class="px-8 py-5 border-b border-gray-200 bg-gray-50 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-black flex items-center justify-center mr-3">1</span>
-                <h3 class="text-lg font-extrabold text-gray-900">Basic Information</h3>
+<form action="{{ route('admin.discounts.store') }}" method="POST" x-data="{ type: 'percentage' }">
+    @csrf
+
+    {{-- Validation Errors --}}
+    @if($errors->any())
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+            <p class="text-sm font-semibold text-red-700 mb-1">Please fix the following errors:</p>
+            <ul class="list-disc list-inside text-sm text-red-600 space-y-0.5">
+                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="space-y-6">
+
+        {{-- ── Section 1: Basic Information ── --}}
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                <h3 class="text-sm font-semibold text-gray-900">Basic Information</h3>
             </div>
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Discount Name (Internal)</label>
-                    <input type="text" name="name" required placeholder="e.g. Black Friday Sale" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm py-3">
-                </div>
-                
+            <div class="p-6 space-y-5">
+
+                {{-- Name – full width --}}
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Discount Type</label>
-                    <select name="type" x-model="type" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3">
-                        <option value="percentage">Percentage Off (%)</option>
-                        <option value="fixed_amount">Fixed Amount Off ($)</option>
-                        <option value="bogo">Buy One Get One</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Discount Name</label>
+                    <input type="text" name="name" value="{{ old('name') }}" required
+                           placeholder="e.g. Summer Sale 20%"
+                           class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400">
+                    <p class="text-xs text-gray-400 mt-1">Internal label — customers won't see this.</p>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Discount Value</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span class="text-gray-500 font-bold" x-text="type === 'percentage' ? '%' : '₹'"></span>
-                        </div>
-                        <input type="number" name="value" required min="1" step="0.01" placeholder="0.00" class="w-full pl-10 rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3" :max="type === 'percentage' ? 100 : ''">
+
+                {{-- Type | Value – two columns --}}
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Discount Type</label>
+                        <select name="type" x-model="type"
+                                class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="percentage">Percentage off (%)</option>
+                            <option value="fixed_amount">Fixed amount off (₹)</option>
+                            <option value="bogo">Buy One Get One</option>
+                        </select>
                     </div>
-                    <p class="text-xs text-gray-500 font-medium mt-2">Enter standard numbers (we handle the cent-conversion automatically in the backend).</p>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Value</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none"
+                                  x-text="type === 'percentage' ? '%' : '₹'">%</span>
+                            <input type="number" name="value" value="{{ old('value') }}"
+                                   required min="1" step="0.01" placeholder="0"
+                                   :max="type === 'percentage' ? 100 : ''"
+                                   class="block w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Enter a standard number (e.g. 20 for 20%).</p>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Application Priority</label>
-                    <input type="number" name="priority" value="0" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3">
-                    <p class="text-xs text-gray-500 font-medium mt-2">Higher numbers process first in the checkout pipeline.</p>
+                {{-- Priority | Min Order – two columns --}}
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Priority
+                            <span class="font-normal normal-case text-gray-400">(lower = applied first)</span>
+                        </label>
+                        <input type="number" name="priority" value="{{ old('priority', 0) }}"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Min. Order Value (₹)
+                            <span class="font-normal normal-case text-gray-400">(optional)</span>
+                        </label>
+                        <input type="number" name="min_order_value" step="0.01" value="{{ old('min_order_value', '0') }}"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ── Section 2: Schedule & Limits ── --}}
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                <h3 class="text-sm font-semibold text-gray-900">Schedule & Limits</h3>
+            </div>
+            <div class="p-6 space-y-5">
+
+                {{-- Starts At | Ends At --}}
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Starts At</label>
+                        <input type="datetime-local" name="starts_at" value="{{ old('starts_at') }}" required
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Ends At
+                            <span class="font-normal normal-case text-gray-400">(optional)</span>
+                        </label>
+                        <input type="datetime-local" name="ends_at" value="{{ old('ends_at') }}"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank for no expiry.</p>
+                    </div>
+                </div>
+
+                {{-- Usage Limit | Stackable --}}
+                <div class="grid grid-cols-2 gap-5 items-start">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Global Usage Limit
+                            <span class="font-normal normal-case text-gray-400">(optional)</span>
+                        </label>
+                        <input type="number" name="usage_limit" value="{{ old('usage_limit') }}"
+                               placeholder="Leave blank for unlimited"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-start gap-3 pt-7">
+                        <input type="checkbox" name="is_stackable" id="stackable" value="1"
+                               {{ old('is_stackable') ? 'checked' : '' }}
+                               class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label for="stackable" class="text-sm text-gray-700 cursor-pointer">
+                            <span class="font-semibold block">Allow stacking</span>
+                            <span class="text-xs text-gray-400">Can combine with other discounts in the same cart.</span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ── Section 3: Qualifiers ── --}}
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                <h3 class="text-sm font-semibold text-gray-900">Qualifiers
+                    <span class="text-gray-400 font-normal text-xs ml-1">— leave blank to apply sitewide</span>
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Specific Products</label>
+                        <select name="qualifiable_products[]" multiple
+                                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent h-44">
+                            @foreach($products ?? [] as $product)
+                                <option value="{{ $product->id }}" {{ collect(old('qualifiable_products', []))->contains($product->id) ? 'selected' : '' }}>
+                                    {{ $product->name }} ({{ $product->sku }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">Hold Ctrl / Cmd to select multiple.</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Specific Categories</label>
+                        <select name="qualifiable_categories[]" multiple
+                                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent h-44">
+                            @foreach($categories ?? [] as $category)
+                                <option value="{{ $category->id }}" {{ collect(old('qualifiable_categories', []))->contains($category->id) ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">Hold Ctrl / Cmd to select multiple.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div class="px-8 py-5 border-b border-gray-200 bg-gray-50 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-black flex items-center justify-center mr-3">2</span>
-                <h3 class="text-lg font-extrabold text-gray-900">Schedule & Limits</h3>
-            </div>
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Starts At</label>
-                    <input type="datetime-local" name="starts_at" required class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm py-3">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Ends At (Optional)</label>
-                    <input type="datetime-local" name="ends_at" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm py-3">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Global Usage Limit (Optional)</label>
-                    <input type="number" name="usage_limit" placeholder="Leave empty for unlimited" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm py-3">
-                </div>
-
-                <div class="flex items-center pt-8">
-                    <input type="checkbox" name="is_stackable" id="stackable" value="1" class="h-6 w-6 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="stackable" class="ml-3 block text-sm font-bold text-gray-900">
-                        Is Stackable?
-                        <span class="block text-xs font-medium text-gray-500 mt-1">Allow this to be combined with other discounts in the cart.</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div class="px-8 py-5 border-b border-gray-200 bg-gray-50 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-black flex items-center justify-center mr-3">3</span>
-                <h3 class="text-lg font-extrabold text-gray-900">Restrictions</h3>
-            </div>
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Minimum Order Value ($)</label>
-                    <input type="number" name="min_order_value" step="0.01" value="0.00" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Apply To (Qualifiers)</label>
-                    <select class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-sm py-3 mb-2">
-                        <option>Entire Store (Sitewide)</option>
-                        <option>Specific Products</option>
-                        <option>Specific Categories</option>
-                    </select>
-                    <p class="text-xs text-gray-500 font-medium">To assign specific products/categories, create the discount first then attach them from the edit screen.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-4 border-t border-gray-200 pt-8 pb-12">
-            <a href="{{ route('admin.discounts.index') }}" class="px-8 py-4 text-gray-700 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</a>
-            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-10 py-4 rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
-                Save Discount Rule
+        {{-- ── Actions ── --}}
+        <div class="flex items-center justify-end gap-3 pb-8">
+            <a href="{{ route('admin.discounts.index') }}"
+               class="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors bg-white">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="px-6 py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm">
+                Create Discount
             </button>
         </div>
-    </form>
+
+    </div>
+</form>
 @endsection

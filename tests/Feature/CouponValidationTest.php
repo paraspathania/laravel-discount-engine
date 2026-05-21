@@ -105,3 +105,29 @@ it('enforces minimum order value', function () {
     expect(fn() => $pipe->handle($this->cart, fn($c) => $c))
         ->toThrow(Exception::class, 'Order subtotal does not meet the minimum requirement for this coupon.');
 });
+
+it('requires guest to log in for coupon with personal limit', function () {
+    $discount = Discount::create([
+        'name' => 'Guest Limit Discount',
+        'type' => 'fixed_amount',
+        'value' => 1000,
+    ]);
+
+    $coupon = Coupon::create([
+        'code' => 'GUEST_LIMIT',
+        'discount_id' => $discount->id,
+        'max_uses_per_user' => 1,
+    ]);
+
+    $cart = new stdClass();
+    $cart->user = null; // Guest
+    $cart->couponCode = 'GUEST_LIMIT';
+    $cart->items = [];
+    $cart->subtotal = 5000;
+
+    $pipe = new ValidateCouponPipe();
+
+    expect(fn() => $pipe->handle($cart, fn($c) => $c))
+        ->toThrow(Exception::class, 'Please log in to use this coupon.');
+});
+

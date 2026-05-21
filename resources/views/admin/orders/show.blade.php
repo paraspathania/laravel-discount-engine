@@ -107,6 +107,32 @@
             </div>
         </div>
 
+        {{-- Shipping Details Card --}}
+        @if($order->shipping_address)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-slate-900">
+                    <h3 class="text-base font-extrabold text-white">Shipping Details</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Recipient Name</span>
+                        <p class="text-sm font-bold text-gray-800 mt-0.5">{{ $order->shipping_name }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Delivery Address</span>
+                        <div class="text-sm text-gray-700 font-medium mt-0.5 space-y-0.5">
+                            <p>{{ $order->shipping_address }}</p>
+                            <p>{{ $order->shipping_city }}, {{ $order->shipping_state }} - {{ $order->shipping_postal_code }}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Contact Phone</span>
+                        <p class="text-sm font-black text-indigo-600 font-mono mt-0.5">{{ $order->shipping_phone }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Discount Usages --}}
         @if($order->discountUsages->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

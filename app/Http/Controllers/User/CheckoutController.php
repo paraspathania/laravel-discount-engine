@@ -59,8 +59,14 @@ class CheckoutController extends Controller
             return redirect()->route('user.cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $request->validate([
-            'terms' => 'accepted'
+        $validated = $request->validate([
+            'shipping_name'        => 'required|string|max:255',
+            'shipping_address'     => 'required|string|max:500',
+            'shipping_city'        => 'required|string|max:100',
+            'shipping_state'       => 'required|string|max:100',
+            'shipping_postal_code' => 'required|string|max:20',
+            'shipping_phone'       => 'required|string|max:20',
+            'terms'                => 'accepted',
         ]);
 
         $userId = auth()->id();
@@ -78,6 +84,12 @@ class CheckoutController extends Controller
 
         try {
             $cart = $this->buildRawCart($request);
+            $cart->shipping_name = $validated['shipping_name'];
+            $cart->shipping_address = $validated['shipping_address'];
+            $cart->shipping_city = $validated['shipping_city'];
+            $cart->shipping_state = $validated['shipping_state'];
+            $cart->shipping_postal_code = $validated['shipping_postal_code'];
+            $cart->shipping_phone = $validated['shipping_phone'];
             
             // Run full pipeline including FinalizeOrderPipe to execute DB operations
             $finalCart = Pipeline::send($cart)
@@ -97,7 +109,7 @@ class CheckoutController extends Controller
             return redirect()->route('user.orders.confirmation', $finalCart->createdOrder->id);
             
         } catch (Exception $e) {
-            return redirect()->route('user.checkout.index')->with('error', $e->getMessage());
+            return redirect()->route('user.checkout.index')->withInput()->with('error', $e->getMessage());
         } finally {
             if ($lock) {
                 $lock->release();

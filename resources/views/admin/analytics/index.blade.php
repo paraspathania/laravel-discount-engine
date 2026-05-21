@@ -58,18 +58,49 @@
             <p class="text-green-100 font-bold uppercase tracking-wider text-sm mb-1">Total Customer Savings</p>
             <h3 class="text-5xl font-black">₹{{ number_format($summary['total_saved'] / 100, 2) }}</h3>
         </div>
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <p class="text-gray-500 font-bold uppercase tracking-wider text-xs mb-3">Top Performers</p>
-            <ul class="space-y-2">
-                @forelse($topDiscounts as $top)
-                    <li class="flex justify-between items-center">
-                        <span class="text-sm font-bold text-gray-800 truncate">{{ $top->discount->name ?? 'N/A' }}</span>
-                        <span class="text-xs font-black text-indigo-600 ml-2 shrink-0">{{ $top->uses }} uses</span>
-                    </li>
-                @empty
-                    <li class="text-sm text-gray-400 font-medium">No data yet.</li>
-                @endforelse
-            </ul>
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative overflow-hidden flex flex-col justify-center">
+            <div class="p-3.5 bg-yellow-50 text-yellow-600 rounded-xl w-fit mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <p class="text-gray-500 font-bold uppercase tracking-wider text-xs mb-1">Avg Saved Per Redemption</p>
+            <h3 class="text-3xl font-black text-gray-900">₹{{ number_format($summary['avg_saved'] / 100, 2) }}</h3>
+        </div>
+    </div>
+
+    {{-- Trends & Top Performers Grid --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {{-- Trend Chart --}}
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-extrabold text-gray-900">Savings & Redemption Trends</h3>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Daily breakdown</span>
+            </div>
+            <div class="relative h-80">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+        
+        {{-- Top Performers list --}}
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-extrabold text-gray-900 mb-4">Top Performing Rules</h3>
+                <ul class="space-y-4">
+                    @forelse($topDiscounts as $index => $top)
+                        <li class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center min-w-0 mr-2">
+                                <span class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-black flex items-center justify-center shrink-0 mr-3">#{{ $index + 1 }}</span>
+                                <span class="text-sm font-bold text-gray-800 truncate">{{ $top->discount->name ?? 'N/A' }}</span>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="block text-xs font-black text-indigo-600">{{ $top->uses }} uses</span>
+                                <span class="block text-[10px] font-bold text-gray-400">₹{{ number_format($top->total_saved / 100, 2) }} saved</span>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="text-sm text-gray-400 font-medium">No performance data yet.</li>
+                    @endforelse
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -117,3 +148,124 @@
     @endif
 
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        
+        const labels = {!! json_encode($chartLabels) !!};
+        const usesData = {!! json_encode($chartUses) !!};
+        const savedData = {!! json_encode($chartSaved) !!};
+
+        if (labels.length === 0) {
+            ctx.font = "16px sans-serif";
+            ctx.fillStyle = "#9ca3af";
+            ctx.textAlign = "center";
+            ctx.fillText("No data available for the selected range", ctx.canvas.width/2, ctx.canvas.height/2);
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Redemptions',
+                        data: usesData,
+                        borderColor: '#4f46e5', // indigo-600
+                        backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                        yAxisID: 'y',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#4f46e5',
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Savings (₹)',
+                        data: savedData,
+                        borderColor: '#10b981', // emerald-500
+                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                        yAxisID: 'y1',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10b981',
+                        pointHoverRadius: 7
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Redemptions',
+                            color: '#4f46e5',
+                            font: { weight: 'bold' }
+                        },
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Savings (₹)',
+                            color: '#10b981',
+                            font: { weight: 'bold' }
+                        },
+                        ticks: {
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(243, 244, 246, 1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 15,
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+@endpush

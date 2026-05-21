@@ -60,7 +60,7 @@
                                 <div class="flex items-center">
                                     <div class="font-bold text-gray-900">{{ $discount->usage_count }}</div>
                                     <div class="text-gray-400 mx-1">/</div>
-                                    <div class="font-medium text-gray-500">{{ $discount->usage_limit ?: '&infin;' }}</div>
+                                    <div class="font-medium text-gray-500">{!! $discount->usage_limit ?: '&infin;' !!}</div>
                                 </div>
                                 @if($discount->usage_limit && $discount->usage_count >= $discount->usage_limit)
                                     <span class="text-xs font-bold text-red-500 mt-1 block">Limit Reached</span>

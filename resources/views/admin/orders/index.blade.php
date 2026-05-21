@@ -12,21 +12,82 @@
     </div>
 @endif
 
+{{-- Stats Cards --}}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <!-- Total Orders -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+        <div class="p-3.5 bg-indigo-50 text-indigo-600 rounded-xl mr-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Orders</p>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">{{ $stats['total_orders'] }}</h3>
+        </div>
+    </div>
+    
+    <!-- Total Revenue -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+        <div class="p-3.5 bg-green-50 text-green-600 rounded-xl mr-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">₹{{ number_format($stats['total_revenue'] / 100, 2) }}</h3>
+        </div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+        <div class="p-3.5 bg-yellow-50 text-yellow-600 rounded-xl mr-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Orders</p>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">{{ $stats['pending_count'] }}</h3>
+        </div>
+    </div>
+
+    <!-- Delivered Orders -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+        <div class="p-3.5 bg-blue-50 text-blue-600 rounded-xl mr-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Delivered Orders</p>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">{{ $stats['delivered_count'] }}</h3>
+        </div>
+    </div>
+</div>
+
 {{-- Filters --}}
 <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-    <form method="GET" class="flex flex-wrap gap-3 flex-1">
+    <form method="GET" class="flex flex-wrap gap-3 flex-1 items-center">
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by customer or order ID…"
                class="rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm text-sm px-4 py-2 w-64">
+        
         <select name="status" class="rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm text-sm px-4 py-2">
             <option value="">All Statuses</option>
             @foreach($statuses as $s)
                 <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
             @endforeach
         </select>
+
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">From:</span>
+            <input type="date" name="from_date" value="{{ request('from_date') }}"
+                   class="rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm text-sm px-3 py-2 w-40">
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">To:</span>
+            <input type="date" name="to_date" value="{{ request('to_date') }}"
+                   class="rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-medium shadow-sm text-sm px-3 py-2 w-40">
+        </div>
+
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition-colors shadow">
             Filter
         </button>
-        @if(request()->hasAny(['search','status']))
+        @if(request()->hasAny(['search','status','from_date','to_date']))
             <a href="{{ route('admin.orders.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-5 py-2 rounded-xl text-sm transition-colors">
                 Clear
             </a>

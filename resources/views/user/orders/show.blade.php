@@ -93,6 +93,18 @@
                     </a>
                 </div>
             </div>
+
+            @if($order->shipping_address)
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 mt-6 shadow-sm">
+                <h2 class="font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">Shipping Details</h2>
+                <div class="text-sm text-gray-600 space-y-1 font-medium">
+                    <p class="font-bold text-gray-900">{{ $order->shipping_name }}</p>
+                    <p>{{ $order->shipping_address }}</p>
+                    <p>{{ $order->shipping_city }}, {{ $order->shipping_state }} - {{ $order->shipping_postal_code }}</p>
+                    <p class="pt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Phone: <span class="text-gray-800 font-bold">{{ $order->shipping_phone }}</span></p>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

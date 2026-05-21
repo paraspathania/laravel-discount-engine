@@ -15,6 +15,12 @@ class Order extends Model
         'tax_total',
         'grand_total',
         'status',
+        'shipping_name',
+        'shipping_address',
+        'shipping_city',
+        'shipping_state',
+        'shipping_postal_code',
+        'shipping_phone',
     ];
 
     /**

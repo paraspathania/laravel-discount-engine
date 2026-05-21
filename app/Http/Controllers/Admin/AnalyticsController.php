@@ -40,6 +40,11 @@ class AnalyticsController extends Controller
             'total_saved'       => $summaryQuery->sum('saved_amount'),
         ];
 
+        // Average saved calculations
+        $summary['avg_saved'] = $summary['total_redemptions'] > 0 
+            ? ($summary['total_saved'] / $summary['total_redemptions']) 
+            : 0;
+
         // Top performing discounts (filtered)
         $topQuery = DiscountUsage::select('discount_id', DB::raw('COUNT(*) as uses'), DB::raw('SUM(saved_amount) as total_saved'))
             ->groupBy('discount_id')
@@ -50,10 +55,38 @@ class AnalyticsController extends Controller
         if ($to)   $topQuery->whereDate('created_at', '<=', $to);
         $topDiscounts = $topQuery->get();
 
+        // Daily redemption trend (filtered) grouped by date
+        $trendQuery = DiscountUsage::select(
+            DB::raw("DATE(created_at) as date_label"),
+            DB::raw("COUNT(*) as uses"),
+            DB::raw("SUM(saved_amount) as total_saved")
+        )
+            ->groupBy(DB::raw("DATE(created_at)"))
+            ->orderBy("date_label", "asc");
+
+        if ($from) $trendQuery->whereDate('created_at', '>=', $from);
+        if ($to)   $trendQuery->whereDate('created_at', '<=', $to);
+        if ($discountId) $trendQuery->where('discount_id', $discountId);
+
+        $trendData = $trendQuery->get();
+
+        // Prepare trend data for the chart views
+        $chartLabels = $trendData->pluck('date_label')->toArray();
+        $chartUses   = $trendData->pluck('uses')->toArray();
+        $chartSaved  = $trendData->map(fn($t) => $t->total_saved / 100)->toArray();
+
         // All discounts for the filter dropdown
         $allDiscounts = Discount::orderBy('name')->get();
 
-        return view('admin.analytics.index', compact('usages', 'summary', 'topDiscounts', 'allDiscounts'));
+        return view('admin.analytics.index', compact(
+            'usages', 
+            'summary', 
+            'topDiscounts', 
+            'allDiscounts', 
+            'chartLabels', 
+            'chartUses', 
+            'chartSaved'
+        ));
     }
 
     public function export(Request $request)
@@ -72,20 +105,31 @@ class AnalyticsController extends Controller
 
         $usages = $query->get();
 
-        $csv = "Date,Customer,Order ID,Discount Rule,Amount Saved\n";
-        foreach ($usages as $u) {
-            $csv .= implode(',', [
-                $u->created_at->format('Y-m-d H:i'),
-                '"' . ($u->order->user->email ?? 'Guest') . '"',
-                '#' . $u->order_id,
-                '"' . ($u->discount->name ?? 'N/A') . '"',
-                number_format($u->saved_amount / 100, 2),
-            ]) . "\n";
-        }
-
-        return response($csv, 200, [
+        $headers = [
             'Content-Type'        => 'text/csv',
             'Content-Disposition' => 'attachment; filename="discount_analytics_' . now()->format('Y-m-d') . '.csv"',
-        ]);
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0'
+        ];
+
+        $callback = function() use ($usages) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Date', 'Customer', 'Order ID', 'Discount Rule', 'Amount Saved (INR)']);
+
+            foreach ($usages as $u) {
+                fputcsv($file, [
+                    $u->created_at->format('Y-m-d H:i'),
+                    $u->order->user->email ?? 'Guest',
+                    '#' . $u->order_id,
+                    $u->discount->name ?? 'N/A',
+                    number_format($u->saved_amount / 100, 2),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

@@ -32,14 +32,35 @@ class FinalizeOrderPipe
                 'tax_total' => $cart->taxTotal,
                 'grand_total' => $cart->grandTotal,
                 'status' => 'confirmed',
+                'shipping_name' => $cart->shipping_name ?? null,
+                'shipping_address' => $cart->shipping_address ?? null,
+                'shipping_city' => $cart->shipping_city ?? null,
+                'shipping_state' => $cart->shipping_state ?? null,
+                'shipping_postal_code' => $cart->shipping_postal_code ?? null,
+                'shipping_phone' => $cart->shipping_phone ?? null,
             ]);
 
-            // Save order items
+            // Save order items and decrement stock atomically
             foreach ($cart->items as $item) {
+                $product = $item->product;
+
+                if ($product->stock < $item->qty) {
+                    throw new Exception("Product [{$product->name}] does not have enough stock (requested: {$item->qty}, available: {$product->stock}).");
+                }
+
+                $updatedProductRows = DB::table('products')
+                    ->where('id', $product->id)
+                    ->where('stock', '>=', $item->qty)
+                    ->decrement('stock', $item->qty);
+
+                if ($updatedProductRows === 0) {
+                    throw new Exception("Product [{$product->name}] stock was updated concurrently and is no longer available in the requested quantity.");
+                }
+
                 $order->items()->create([
-                    'product_id' => $item->product->id,
+                    'product_id' => $product->id,
                     'quantity'   => $item->qty,
-                    'unit_price' => $item->product->price,
+                    'unit_price' => $product->price,
                     'line_total' => $item->price,
                 ]);
             }
@@ -100,7 +121,7 @@ class FinalizeOrderPipe
 
         } catch (Exception $e) {
             DB::rollBack();
-            throw clone $e; // Throw back to CheckoutController to handle
+            throw $e; // Throw back to CheckoutController to handle
         }
 
         return $next($cart);

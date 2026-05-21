@@ -43,8 +43,14 @@ class ValidateCouponPipe
         }
 
         // 4. Check user personal usage limit
-        if (!$coupon->isUsableByUser($cart->user->id)) {
-            throw new Exception("You have exceeded your personal usage limit for this coupon.");
+        if (is_null($cart->user)) {
+            if (!is_null($coupon->max_uses_per_user)) {
+                throw new Exception("Please log in to use this coupon.");
+            }
+        } else {
+            if (!$coupon->isUsableByUser($cart->user->id)) {
+                throw new Exception("You have exceeded your personal usage limit for this coupon.");
+            }
         }
 
         // 5. Check cart meets minimum order value (assuming dynamic attribute or 0 fallback)

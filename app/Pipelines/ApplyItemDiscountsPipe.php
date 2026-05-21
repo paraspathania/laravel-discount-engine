@@ -63,6 +63,7 @@ class ApplyItemDiscountsPipe
                         // Track usage for finalization
                         $cart->appliedDiscounts[] = [
                             'discount_id' => $discount->id,
+                            'name' => $discount->name,
                             'saved_amount' => (int)$saved,
                         ];
 

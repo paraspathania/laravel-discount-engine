@@ -31,6 +31,7 @@ class ApplyShippingDiscountsPipe
 
             $cart->appliedDiscounts[] = [
                 'discount_id' => $activeCoupon->id,
+                'name' => $activeCoupon->name,
                 'saved_amount' => (int)$shippingCost,
             ];
         }

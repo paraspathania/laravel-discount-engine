@@ -20,6 +20,19 @@
                     Your order <span class="font-black text-gray-900">#{{ $order->id }}</span> has been confirmed. A confirmation email has been sent to {{ auth()->user()->email }}.
                 </p>
 
+                <!-- Shipping Details -->
+                @if($order->shipping_address)
+                <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 mb-6 text-left">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 pb-2">Delivery Address</h3>
+                    <div class="text-sm font-medium text-gray-800 space-y-1">
+                        <p class="font-extrabold text-gray-900">{{ $order->shipping_name }}</p>
+                        <p>{{ $order->shipping_address }}</p>
+                        <p>{{ $order->shipping_city }}, {{ $order->shipping_state }} - {{ $order->shipping_postal_code }}</p>
+                        <p class="mt-2 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone: <span class="font-bold text-gray-800">{{ $order->shipping_phone }}</span></p>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Receipt Table -->
                 <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 mb-10 text-left">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-200 pb-2">Order Summary</h3>
