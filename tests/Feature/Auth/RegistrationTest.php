@@ -28,4 +28,17 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_registration_fails_if_name_contains_invalid_characters(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User 123',
+            'email' => 'test2@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors(['name']);
+        $this->assertGuest();
+    }
 }

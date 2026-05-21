@@ -11,6 +11,7 @@
         <div>
             <label for="name" class="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
             <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" 
+                pattern="^[a-zA-Z\s]+$" title="The name field must contain only alphabets and spaces."
                 class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 focus:bg-white transition-all text-sm">
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
