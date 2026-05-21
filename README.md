@@ -1,49 +1,21 @@
-# Discount & Offer Management System
+# SavvyCart - Enterprise Discount & Storefront Engine
 
-An enterprise-grade Laravel 12 backend architecture for managing, validating, and sequentially applying stackable cart discounts and coupons.
-
----
-
-## 🚀 Prerequisites
-- PHP 8.2+
-- Composer
-- Docker (for full stack) or XAMPP (Local)
-- MySQL / MariaDB
-- Redis (Required for locking and caching)
+An enterprise-grade Laravel 12 & Alpine.js application for managing, validating, and sequentially applying stackable cart discounts, coupons, and orders. Features a gorgeous premium administrative portal, high-precision financial engines, and resilient concurrent safety measures.
 
 ---
 
-## ⚙️ Installation & Setup
+## 🚀 Key Features
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/discount-system.git
-cd discount-system
-
-# 2. Install dependencies
-composer install
-
-# 3. Environment configuration
-cp .env.example .env
-php artisan key:generate
-
-# Configure your .env for MySQL and Redis
-# DB_CONNECTION=mysql
-# DB_HOST=127.0.0.1
-# REDIS_HOST=127.0.0.1
-# CACHE_DRIVER=redis
-
-# 4. Database Setup
-php artisan migrate:fresh --seed
-
-# 5. Start Queue & Server
-php artisan queue:work
-php artisan serve
-```
+* **🎨 Premium Admin Portal**: Designed with a high-fidelity "Nebula Dark & Glass" aesthetic, featuring a glassmorphic sidebar, rich gradients, dynamic metrics, and custom SVG styling.
+* **⚡ High-Precision Calculations**: Formulates checkout subtotals, stacked order-level promotions, and tax liabilities using the robust PHP `BCMath` library to avoid floating-point errors.
+* **🛡️ Concurrency Safeguards**: Avoids race conditions during concurrent requests via atomic row checking constraints (Layer 1), Redis database mutex locks (Layer 2), and background worker queues (Layer 3).
+* **🔔 Live Notifications**: An Alpine.js integrated administration panel linked to real database alerts (e.g. low stock warnings, recent orders, discount usage audits).
+* **✨ Dynamic Signup Experience**: Front-end validation checks and client-side password/email helper alerts, plus strict server-side alphabet-only name constraints.
+* **🚀 Cached Performance**: Storefront query caching invalidates automatically using Model Observers registered in service providers.
 
 ---
 
-## 🏗️ Architecture Decisions
+## 🏗️ Architectural Decisions & Safeguards
 
 ### 1. Why `BCMath`? (Floating Point Danger)
 Never use PHP `floats` for money. `0.1 + 0.2` in standard floating-point binary results in `0.30000000000000004`. When scaled across thousands of orders and taxes, these micro-fractions cost businesses real money. This system stores everything in `cents` (integers) and exclusively uses string-based `BCMath` extensions to guarantee 100% precision.
@@ -64,6 +36,52 @@ A user might double-click the "Pay" button. We wrap the checkout controller in `
 ### 5. Why the `Strategy` Pattern? (Open/Closed Principle)
 Discounts come in many forms (Percentage, Fixed, BOGO, Free Shipping). Instead of a massive `if/else` block inside the controller, we abstract math into `DiscountStrategyInterface`. When marketing wants a new "Buy 2 Get 50% Off" logic, developers just create a new strategy class without touching existing, tested core code.
 
+### 6. Cache Invalidation Safeguard
+Storefront active discount retrieval is heavily cached for 5 minutes (`300` seconds) via `DiscountService` to keep database loads minimal. The system registers a model `DiscountObserver` in `AppServiceProvider` to evict this cache immediately upon any administrative creation, update, or deletion of discounts.
+
+---
+
+## ⚙️ Installation & Setup
+
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL / MariaDB
+- Redis (Required for locking and caching)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-org/discount-system.git
+cd discount-system
+
+# 2. Install backend dependencies
+composer install
+
+# 3. Install frontend assets
+npm install
+
+# 4. Environment configuration
+cp .env.example .env
+php artisan key:generate
+
+# Configure your .env for MySQL, Redis, and Queue drivers
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# CACHE_STORE=file (or database/redis)
+# SESSION_DRIVER=file
+
+# 5. Run migrations & database seeders
+php artisan migrate:fresh --seed
+
+# 6. Build production frontend assets
+npm run build
+
+# 7. Start Queue worker and local server
+php artisan queue:work
+php artisan serve
+```
+
 ---
 
 ## 🌐 API Endpoint Matrix
@@ -74,7 +92,7 @@ All endpoints require the `Accept: application/json` header. Protected endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/auth/login` | Returns Sanctum Token |
-| `POST` | `/api/auth/register` | Registers new user |
+| `POST` | `/api/auth/register` | Registers new user (Strict validation) |
 
 ### Offers & Coupons
 | Method | Endpoint | Description |
@@ -140,4 +158,5 @@ Tests cover:
 - Exact BCMath calculations
 - Coupon isolation states (expiry, limits, minimum spends)
 - Pipeline mathematical stacking accuracy
-- Concurrency simulation
+- Concurrency simulation & stock race condition prevention
+- Sign-up input checks and validations
